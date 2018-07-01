@@ -9,5 +9,5 @@ php:
   - 7.2
   - hhvm
 
-script: tests/vendor/phpunit/phpunit/phpunit --configuration tests/phpunit.xml
+script: phpunit --configuration tests/phpunit.xml
 
