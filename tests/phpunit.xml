@@ -9,18 +9,18 @@
         bootstrap='vendor/autoload.php'>
     <testsuites>
         <testsuite name="Yatrie class test">
-            <directory>./</directory>
+            <directory>./tests</directory>
+            <file>TestYatrie.php</file>
         </testsuite>
     </testsuites>
-
 
 <filter>
 
     <whitelist processUncoveredFilesFromWhitelist="true">
-        <directory suffix=".php">../src</directory>
+        <directory suffix=".php">./src</directory>
         <file>Yatrie.php</file>
         <exclude>
-            <directory suffix=".php">./vendor</directory>
+            <directory suffix=".php">./tests/vendor</directory>
         </exclude>
     </whitelist>
 </filter>
