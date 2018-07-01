@@ -195,6 +195,11 @@ class Yatrie
         return substr(pack('P', $i), 0, 6);
     }
 
+    public function unpack_mod(string $str)
+    {
+        return hexdec(strrev(unpack('h*', $str)[1]));
+    }
+
     public function unpack_48(string $str)
     {
         return unpack('P', str_pad($str, 8, "\0"))[1];
@@ -214,27 +219,27 @@ class Yatrie
     public function node_clear_char_flag(int $id)
     {
         $mask = $this->node_get_children($id);
-        $this->bit_clear($mask, $this->char_number('flag'));
+        $this->bit_clear($mask, $this->codepage['flag']);
         return $this->node_save_children($id, $mask);
     }
 
     public function node_get_char_flag(int $id)
     {
         $mask = $this->node_get_children($id);
-        return $this->bit_check($mask, $this->char_number('flag'));
+        return $this->bit_check($mask, $this->codepage['flag']);
     }
 
     public function node_set_char_flag(int $id)
     {
 //        print "add flag id:$id\n";
         $mask = $this->node_get_children($id);
-        $this->bit_set($mask, $this->char_number('flag'));
+        $this->bit_set($mask, $this->codepage['flag']);
         return $this->node_save_children($id, $mask);
     }
 
     public function trie_list(string $word)
     {
-        $abc = $this->str_split_rus($word);
+        $abc = $this->str_split_rus_mod($word);
         $cnt = count($abc);
 
         //this is the first letter
@@ -254,7 +259,7 @@ class Yatrie
         $mask = $this->node_get_children($id);
         $cnt = count($this->codepage_index) + 1;
         for ($i = 1; $i < $cnt; ++$i) {
-            if($this->bit_check($mask,$i)){
+            if ($this->bit_check($mask, $i)) {
                 $res[] = $i;
             }
         }
@@ -264,7 +269,7 @@ class Yatrie
     public function trie_add(string $word)
     {
 //        print "word: $word\n";
-        $abc = $this->str_split_rus($word);
+        $abc = $this->str_split_rus_mod($word);
         $cnt = count($abc);
 
         //this is the first letter
@@ -287,8 +292,8 @@ class Yatrie
 
         $mask = $this->node_get_children($parent_id);
 
-        if ($this->bit_check($mask, $this->char_number($char))) {
-            return $this->node_get_ref($parent_id, $this->char_index($char));
+        if ($this->bit_check($mask, $this->codepage[$char])) {
+            return $this->node_get_ref($parent_id, $this->codepage_index[$char]);
         } else {
             return false;
         }
@@ -302,11 +307,11 @@ class Yatrie
         $str = decbin($mask);
 //print "char: $char parent_id: $parent_id  mask: $str\n";
 
-        if ($this->bit_check($mask, $this->char_number($char))) {
-            $id = $this->node_get_ref($parent_id, $this->char_index($char));
+        if ($this->bit_check($mask, $this->codepage[$char])) {
+            $id = $this->node_get_ref($parent_id, $this->codepage_index[$char]);
 //            print "ref:$id\n";
         } else {
-            $this->bit_set($mask, $this->char_number($char));
+            $this->bit_set($mask, $this->codepage[$char]);
             $this->node_save_children($parent_id, $mask);
             $str = decbin($mask);
 //print "saved char: $char mask: $str\n";
@@ -328,7 +333,7 @@ class Yatrie
 
     public function trie_remove(string $word)
     {
-        $abc = $this->str_split_rus($word);
+        $abc = $this->str_split_rus_mod($word);
         $cnt = count($abc);
 
         $id = $this->codepage_index[$abc[0]];
@@ -349,7 +354,7 @@ class Yatrie
 
     public function trie_check(string $word)
     {
-        $abc = $this->str_split_rus($word);
+        $abc = $this->str_split_rus_mod($word);
         $cnt = count($abc);
 
         $id = $this->codepage_index[$abc[0]];
@@ -362,36 +367,25 @@ class Yatrie
     }
 
 
-    function char_index(string $char)
-    {
-        return isset($this->codepage[$char]) ? $this->codepage_index[$char] : false;
-    }
-
-
-    function char_number(string $char)
-    {
-        return isset($this->codepage[$char]) ? $this->codepage[$char] : false;
-    }
-
-    function bit_set(int &$bitmap, int $bit)
+    private function bit_set(int &$bitmap, int $bit)
     {
         $bitmap |= 1 << $bit - 1;
         return $bitmap;
     }
 
-    function bit_clear(int &$bitmap, int $bit)
+    private function bit_clear(int &$bitmap, int $bit)
     {
         $bitmap &= ~(1 << $bit - 1);
         return $bitmap;
     }
 
-    function bit_check(int &$bitmap, int $bit)
+    private function bit_check(int $bitmap, int $bit)
     {
         return (bool)(($bitmap >> $bit - 1) & 1);
     }
 
 
-    function bit_count(int $bmask)
+    private function bit_count(int $bmask)
     {
         $cnt = 0;
         while ($bmask != 0) {
@@ -401,7 +395,49 @@ class Yatrie
         return $cnt;
     }
 
-    public function str_split_rus(string $word)
+    private function str_split_rus_mod(string $word)
+    {
+        $byte3 = array('’' => 'e28099',);
+
+        $byte2 = array('а' => 'd0b0', 'б' => 'd0b1', 'в' => 'd0b2', 'г' => 'd0b3', 'д' => 'd0b4',
+            'е' => 'd0b5', 'ё' => 'd191', 'ж' => 'd0b6', 'з' => 'd0b7', 'и' => 'd0b8', 'й' => 'd0b9', 'к' => 'd0ba',
+            'л' => 'd0bb', 'м' => 'd0bc', 'н' => 'd0bd', 'о' => 'd0be', 'п' => 'd0bf', 'р' => 'd180', 'с' => 'd181',
+            'т' => 'd182', 'у' => 'd183', 'ф' => 'd184', 'х' => 'd185', 'ц' => 'd186', 'ч' => 'd187', 'ш' => 'd188',
+            'щ' => 'd189', 'ъ' => 'd18a', 'ы' => 'd18b', 'ь' => 'd18c', 'э' => 'd18d', 'ю' => 'd18e', 'я' => 'd18f');
+
+        $byte1 = array('-' => '2d', '\'' => 27, '0' => 30, '1' => 31, '2' => 32, '3' => 33, '4' => 34, '5' => 35,
+            '6' => 36, '7' => 37, '8' => 38, '9' => 39,);
+
+        $res = array();
+        for ($i = 0, $len = strlen($word); $i < $len;) {
+            $sub = substr($word, $i, 2);
+            if (isset($byte2[$sub])) {
+                $res[] = $sub;
+                $i += 2;
+                continue;
+            }
+
+            $sub = substr($word, $i, 1);
+            if (isset($byte1[$sub])) {
+                $res[] = $sub;
+                $i += 1;
+                continue;
+            }
+
+            $sub = substr($word, $i, 3);
+            if (isset($byte3[$sub])) {
+                $res[] = $sub;
+                $i += 3;
+                continue;
+            }
+            return false; //if we are here then unknown symbol detected
+        }
+
+        return $res;
+    }
+
+
+    private function str_split_rus(string $word)
     {
         $byte3 = array('e28099' => '’');
 
