@@ -3,7 +3,7 @@
 use PHPUnit\Framework\TestCase;
 
 require_once(dirname(__FILE__) . '/vendor/autoload.php'); //PHPUnit
-require_once(dirname(__FILE__) . '/../src/Reflect.php'); //wrapper for the Reflection class to test non public methods
+require_once(dirname(__FILE__) . '/../etc/Reflect.php'); //wrapper for the Reflection class to test non public methods
 require_once(dirname(__FILE__) . '/../src/Yatrie.php'); //Test class
 
 

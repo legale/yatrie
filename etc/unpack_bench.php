@@ -1,5 +1,5 @@
 <?php
-require ('bmark.php');
+require_once(dirname(__FILE__) . '/bmark.php');
 
 function unpack_mod(string $str)
 {

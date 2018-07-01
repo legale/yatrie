@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit
+        colors="true"
+        stopOnFailure="false"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        bootstrap='vendor/autoload.php'>
+    <testsuites>
+        <testsuite name="Yatrie class test">
+            <directory>./</directory>
+        </testsuite>
+    </testsuites>
+
+
+<filter>
+
+    <whitelist processUncoveredFilesFromWhitelist="true">
+        <directory suffix=".php">../src</directory>
+        <file>Yatrie.php</file>
+        <exclude>
+            <directory suffix=".php">./vendor</directory>
+        </exclude>
+    </whitelist>
+</filter>
+
+
+    <logging>
+        <log type="coverage-html" target="/coverage/html.html" lowUpperBound="35"
+             highLowerBound="70"/>
+        <log type="coverage-clover" target="/coverage/coverage.xml"/>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
+    </logging>
+</phpunit>
