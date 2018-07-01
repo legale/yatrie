@@ -17,10 +17,10 @@
 <filter>
 
     <whitelist processUncoveredFilesFromWhitelist="true">
-        <directory suffix=".php">./src</directory>
+        <directory suffix=".php">../src</directory>
         <file>Yatrie.php</file>
         <exclude>
-            <directory suffix=".php">./tests/vendor</directory>
+            <directory suffix=".php">./vendor</directory>
         </exclude>
     </whitelist>
 </filter>
