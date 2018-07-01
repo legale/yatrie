@@ -27,9 +27,9 @@
 
 
     <logging>
-        <log type="coverage-html" target="/coverage/html.html" lowUpperBound="35"
+        <log type="coverage-html" target="coverage/html" lowUpperBound="35"
              highLowerBound="70"/>
-        <log type="coverage-clover" target="/coverage/coverage.xml"/>
+        <log type="coverage-clover" target="coverage/coverage.xml"/>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
     </logging>
 </phpunit>

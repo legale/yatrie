@@ -10,5 +10,5 @@ php:
 install:
    - cd tests && composer install
 
-script: phpunit --configuration phpunit.xml --no-logging
+script: phpunit --configuration phpunit.xml
 
