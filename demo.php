@@ -1,6 +1,6 @@
 <?php
-require(dirname(__FILE__) . '/Yatrie.php');
-require(dirname(__FILE__) . '/bmark.php');
+require(dirname(__FILE__) . '/src/Yatrie.php');
+require(dirname(__FILE__) . '/src/bmark.php');
 
 $dic = dirname(__FILE__) . '/dic_tiny.txt';
 $trie = new Yatrie($dic);

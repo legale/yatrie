@@ -107,9 +107,9 @@ class Yatrie
         $trie = &$this->trie(++$this->id);
         $trie .= $mask ?? $this->str_pad_null($this->size_mask);
         $trie .= $refs ?? $this->str_pad_null($this->size_refs);
-        if ($this->id % 30000 === 0) {
-            print "created node id: " . $this->id . "\n";
-        }
+//        if ($this->id % 30000 === 0) {
+//            print "created node id: " . $this->id . "\n";
+//        }
 
         return $this->id;
     }

@@ -1,4 +1,4 @@
-# Yatrie v0.0.1
+# Yatrie v0.0.2
 Yet another Trie Library 
 
 ## SETUP
