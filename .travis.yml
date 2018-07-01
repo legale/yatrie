@@ -6,7 +6,6 @@ php:
   # using major version aliases
   - 7.1
   - 7.2
-  - 7.3
 
 install:
    - cd tests && composer install
