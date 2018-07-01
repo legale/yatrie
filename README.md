@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/legale/yatrie/badge.svg?branch=master)](https://coveralls.io/github/legale/yatrie?branch=master)
+[![Build Status](https://travis-ci.org/legale/yatrie.svg?branch=master)](https://travis-ci.org/legale/yatrie)
 [![GitHub license](https://img.shields.io/github/license/legale/yatrie.svg)](https://github.com/legale/yatrie/blob/master/LICENSE)
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/legale/yatrie.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Flegale%2Fyatrie)
 
