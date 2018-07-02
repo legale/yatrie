@@ -79,25 +79,21 @@ class Yatrie
         for ($i = 0; $i < $this->char_count; ++$i) {
             $this->node_make();
         }
-//        print " layer make trie len: ".strlen($this->trie)."\n";
         return true;
     }
 
-    public function str_pad_null(int $size)
+    public function str_pad_null(int $size = 0)
     {
-        return str_pad('', $size, "\0");
+        return str_repeat("\0", $size);
     }
 
     //this method return trie dictionary block
-    public function &trie(int $id = null)
+    public function &trie(int $id)
     {
         if (!is_array($this->dic)) {
             return $this->dic;
-        } else if (isset($id)) {
-            $block = (int)floor($this->id / $this->size_block);
         } else {
-            end($this->dic);
-            $block = key($this->dic);
+            $block = (int)floor($this->id / $this->size_block);
         }
         return $this->dic[$block];
     }
@@ -200,21 +196,23 @@ class Yatrie
         return hexdec(strrev(unpack('h*', $str)[1]));
     }
 
-    public function unpack_48(string $str)
-    {
-        return unpack('P', str_pad($str, 8, "\0"))[1];
-    }
 
     public function pack_24(int $i)
     {
         return substr(pack('V', $i), 0, 3);
     }
 
-    public function unpack_24(string $str)
+
+    function unpack_24(string $str)
     {
-        return unpack('V', str_pad($str, 4, "\0"))[1];
+        return (ord($str[2]) << 16) + (ord($str[1]) << 8) + ord($str[0]);
     }
 
+
+    function unpack_48(string $str)
+    {
+        return (ord($str[5]) << 40) + (ord($str[4]) << 32) + (ord($str[3]) << 24) + (ord($str[2]) << 16) + (ord($str[1]) << 8) + ord($str[0]);
+    }
 
     public function node_clear_char_flag(int $id)
     {
@@ -253,18 +251,6 @@ class Yatrie
         return decbin($mask);
     }
 
-    public function node_foreach(int $id)
-    {
-        $res = array();
-        $mask = $this->node_get_children($id);
-        $cnt = count($this->codepage_index) + 1;
-        for ($i = 1; $i < $cnt; ++$i) {
-            if ($this->bit_check($mask, $i)) {
-                $res[] = $i;
-            }
-        }
-        return $res;
-    }
 
     public function trie_add(string $word)
     {

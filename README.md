@@ -5,8 +5,8 @@
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/legale/yatrie.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Flegale%2Fyatrie)
 
 
-# Yatrie v0.0.2
-Yet another Trie Library 
+# Yatrie v0.0.3
+Yet another PHP Trie Library 
 
 ## SETUP
 `git clone https://github.com/legale/yatrie`
@@ -23,7 +23,7 @@ run:
 to perform a search a million times and show the execution time
 
 ## OVERVIEW
-This library is built without native PHP data structures. The dictionary stored in memory as a binary string.
+This library is built almost without native PHP data structures. The dictionary stored in memory as a binary string.
 Current version speed is 1 millon words in 13.067 second (76528 wps).
 
 
