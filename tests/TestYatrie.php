@@ -14,14 +14,20 @@ class TestYatrie extends TestCase
 {
 
 
-    public function bit_set_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_bit_set()
     {
         return [
             ['100', 1, '101'], ['0', 2, '10'], ['0', 3, '100'], ['1', 3, '101'], ['111', 4, '1111'],
         ];
     }
 
-    public function bit_clear_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_bit_clear()
     {
         return [
             ['1', 1, '0'], ['10', 2, '0'], ['111', 3, '11'], ['11', 3, '11'], ['1011', 4, '11'],
@@ -29,27 +35,39 @@ class TestYatrie extends TestCase
     }
 
 
-    public function bit_check_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_bit_check()
     {
         return [
             ['1', 1, true], ['1', 2, false], ['101011', 3, false], ['101011', 4, true]
         ];
     }
 
-    public function bit_count_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_bit_count()
     {
         return [
             ['1', 1], ['11', 2], ['101011', 4], ['11010000', 3]
         ];
     }
 
-    public function pack_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_pack()
     {
         return [[1], [2345], [3243242], [1234567]];
     }
 
 
-    public function unpack_24_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_unpack_24()
     {
         $max = bindec('111111111111111111111111');
         $half = $max / 2;
@@ -67,7 +85,10 @@ class TestYatrie extends TestCase
         ];
     }
 
-    public function unpack_48_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_unpack_48()
     {
         $max = bindec('111111111111111111111111111111111111111111111111');
         $half = $max / 2;
@@ -85,7 +106,10 @@ class TestYatrie extends TestCase
         ];
     }
 
-    public function str_pad_null_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_str_pad_null()
     {
         return [
             [0, ''],
@@ -97,7 +121,10 @@ class TestYatrie extends TestCase
         ];
     }
 
-    public function node_make_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_node_make()
     {
         //children mask (string 6 bytes), refs(string 46 * 3 = 138 bytes), created node id (int)
         return [
@@ -111,28 +138,30 @@ class TestYatrie extends TestCase
     }
 
 
-    public function trie_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_trie()
     {
         return [[0], [1], [1000], [5000], [10000], [20000],];
     }
 
-    public function node_get_children_dataProvider()
+    /**
+     * @return array
+     */
+    public function data_node_get_children()
     {
         return [[0], [1], [2], [21], [24]];
     }
 
-
-    protected function setUp()
-    {
-
-    }
-
     /**
-     *
+     * @return array
      */
-    protected function tearDown()
+    public function data_node_get_last_id()
     {
+        return [[10], [15], [2500], [15000]];
     }
+
 
     /**
      *
@@ -142,9 +171,8 @@ class TestYatrie extends TestCase
         $this->assertTrue(true);
     }
 
-
     /**
-     * @dataProvider bit_set_dataProvider
+     * @dataProvider data_bit_set
      */
     public function test_bit_set(string $mask, int $bit, string $expected)
     {
@@ -158,7 +186,7 @@ class TestYatrie extends TestCase
     }
 
     /**
-     * @dataProvider bit_clear_dataProvider
+     * @dataProvider data_bit_clear
      */
     public function test_bit_clear(string $mask, int $bit, string $expected)
     {
@@ -170,9 +198,8 @@ class TestYatrie extends TestCase
         $this->assertEquals($res, $expected);
     }
 
-
     /**
-     * @dataProvider bit_check_dataProvider
+     * @dataProvider data_bit_check
      */
     public function test_bit_check(string $mask, int $bit, string $expected)
     {
@@ -185,7 +212,7 @@ class TestYatrie extends TestCase
     }
 
     /**
-     * @dataProvider bit_count_dataProvider
+     * @dataProvider data_bit_count
      */
     public function test_bit_count(string $mask, int $expected)
     {
@@ -197,6 +224,85 @@ class TestYatrie extends TestCase
         $this->assertEquals($res, $expected);
     }
 
+    /**
+     * @return array
+     */
+    public function node_char_get_ref_data()
+    {
+        //parend node id, word
+        return [
+            [0, 'а'],
+            [0, 'б'],
+            [0, 'я'],
+            [0, 'фрик'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function trie_add_char_dataProvider()
+    {
+        //parend node id, words to add, returned reference id
+        return [
+            [0, ['а'], 1],
+            [0, ['б'], 1],
+            [0, ['я'], 1],
+            [0, ['а', 'аб'], 2],
+            [0, ['яя'], 2],
+            [0, ['ааааа'], 5],
+            [0, ['бвгде'], 5],
+            [0, ['фрика'], 5],
+            [0, ['фрик', 'фрика'], 5],
+            [10, ['фри', 'фрик', 'фрика'], 5],
+        ];
+    }
+
+    /**
+     * @param string $id
+     * @param string $char
+     * @param string $expected
+     * @test
+     * @dataProvider trie_add_char_dataProvider
+     */
+    public function test_trie_add_char(int $id, array $words, int $expected)
+    {
+        $t = new Reflect(new Yatrie());
+        $shift = $t->id;
+
+        foreach ($words as $word) {
+            $parent_id = $id;
+            foreach ($t->str_split_rus($word) as $char) {
+                $parent_id = $t->trie_add_char($parent_id, $char);
+            }
+        }
+        $this->assertEquals($shift + $expected, $parent_id);
+    }
+
+    /**
+     * @param string $id
+     * @param string $char
+     * @param string $expected
+     * @test
+     * @dataProvider node_char_get_ref_data
+     */
+    public function test_node_char_get_ref(int $id, string $word)
+    {
+        $t = new Reflect(new Yatrie());
+        $shift = $t->id;
+
+        $parent_id = $id;
+        foreach ($t->str_split_rus($word) as $char) {
+            //dic is empty so false expected
+            $this->assertFalse($t->node_char_get_ref($parent_id, $char));
+            $ref_id = $t->trie_add_char($parent_id, $char);
+
+            $this->assertEquals($t->node_char_get_ref($parent_id, $char), $ref_id);
+            $parent_id = $ref_id;
+        }
+
+
+    }
 
     /**
      * @test
@@ -230,7 +336,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider pack_dataProvider
+     * @dataProvider data_pack
      */
     public function test_pack_24(int $int)
     {
@@ -245,7 +351,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider pack_dataProvider
+     * @dataProvider data_pack
      */
     public function test_pack_48(int $int)
     {
@@ -260,7 +366,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider unpack_48_dataProvider
+     * @dataProvider data_unpack_48
      */
     public function test_unpack_48(string $str, int $expected)
     {
@@ -273,7 +379,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider unpack_24_dataProvider
+     * @dataProvider data_unpack_24
      */
     public function test_unpack_24(string $str, int $expected)
     {
@@ -286,7 +392,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider unpack_48_dataProvider
+     * @dataProvider data_unpack_48
      */
     public function test_unpack_mod(string $str, int $expected)
     {
@@ -297,10 +403,9 @@ class TestYatrie extends TestCase
         $this->assertEquals($i, $expected);
     }
 
-
     /**
      * @test
-     * @dataProvider str_pad_null_dataProvider
+     * @dataProvider data_str_pad_null
      * @param int $size
      * @param string $expected
      */
@@ -308,6 +413,26 @@ class TestYatrie extends TestCase
     {
         $t = $this->class_mock_create();
         $this->assertEquals($t->str_pad_null($size), $expected);
+    }
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject
+     */
+    public function class_mock_create()
+    {
+        // Get mock, without the constructor being called
+        return $this->getMockBuilder('Yatrie')
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+    }
+
+
+    /**
+     * @return array
+     */
+    public function init_trie_dataProvider()
+    {
+        return [[null], [dirname(__FILE__) . '/test_dic.txt']];
     }
 
     /**
@@ -323,16 +448,30 @@ class TestYatrie extends TestCase
 
     }
 
-    public function test_node_get_last_id()
+
+    /**
+     * @test
+     * @dataProvider data_node_get_last_id
+     */
+    public function test_node_get_last_id(int $nodes)
     {
-        $t = new Yatrie();
-        $id = $t->id;
-        $t->node_make();
-        $this->assertEquals($id + 1, $t->node_get_last_id());
-        $t->node_make();
-        $this->assertEquals($id + 2, $t->node_get_last_id());
+        $t = $this->class_mock_create();
+
+        //class variables
+        $t->char_count = $chars = count($t->codepage_index);
+        $t->size_refs = $chars * $t->size_ref;
+        $t->size_node = $t->size_mask + $t->size_refs;
+
+        for ($i = 0; $i < $nodes; ++$i) {
+            $t->node_make();
+        }
+        $this->assertEquals($nodes - 1, $t->node_get_last_id());
+
     }
 
+    /**
+     *
+     */
     public function test_layer_make_empty()
     {
         $t = $this->class_mock_create();
@@ -351,10 +490,11 @@ class TestYatrie extends TestCase
 
     /**
      * @test
+     * @dataProvider init_trie_dataProvider
      */
-    public function test_init_trie()
+    public function test_init_trie(string $dic = null)
     {
-        $t = new Yatrie();
+        $t = new Yatrie($dic);
         //check class calculated variables
         $this->assertEquals(count($t->codepage_index), $t->char_count);
         $this->assertEquals(count($t->codepage_index) * $t->size_ref, $t->size_refs);
@@ -364,14 +504,16 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider node_make_dataProvider
+     * @dataProvider data_node_make
      */
     public function test_node_make(string $mask = null, string $refs = null, string $expected)
     {
         $t = $this->class_mock_create();
-        //calculate $size_refs
-        $cnt = count($t->codepage_index);
-        $t->size_refs = $t->size_ref * $cnt;
+
+        //class variables
+        $t->char_count = $chars = count($t->codepage_index);
+        $t->size_refs = $chars * $t->size_ref;
+
         $size_node = $t->size_mask + $t->size_refs;
 
         //create sample dic
@@ -389,22 +531,12 @@ class TestYatrie extends TestCase
 
     }
 
-
-    public function class_mock_create()
-    {
-        // Get mock, without the constructor being called
-        return $this->getMockBuilder('Yatrie')
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-    }
-
-
     /**
      * @param int $nodes
      * @param $expected
      *
      * @test
-     * @dataProvider trie_dataProvider
+     * @dataProvider data_trie
      */
     public function test_trie(int $nodes)
     {
@@ -428,10 +560,9 @@ class TestYatrie extends TestCase
 
     }
 
-
     /**
      * @test
-     * @dataProvider node_get_children_dataProvider
+     * @dataProvider data_node_get_children
      * @param int $id
      */
     public function test_node_get_children(int $id)
@@ -449,7 +580,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider node_get_children_dataProvider
+     * @dataProvider data_node_get_children
      * @param int $id
      */
     public function test_node_save_children(int $id)
@@ -463,7 +594,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider node_get_children_dataProvider
+     * @dataProvider data_node_get_children
      * @param int $id
      */
     public function test_node_get_ref(int $id)
@@ -496,7 +627,7 @@ class TestYatrie extends TestCase
 
     /**
      * @test
-     * @dataProvider node_get_children_dataProvider
+     * @dataProvider data_node_get_children
      * @param int $id
      */
     public function test_node_save_ref(int $id)
@@ -516,21 +647,33 @@ class TestYatrie extends TestCase
         $this->assertEquals($i2, $ref2);
     }
 
-    public function test_pack_16(){
+    /**
+     *
+     */
+    public function test_pack_16()
+    {
         $t = new Yatrie();
         $i = bindec('111111111111111');
         $check = pack('v', $i);
         $this->assertEquals($check, $t->pack_16($i));
     }
 
-    public function test_pack_32(){
+    /**
+     *
+     */
+    public function test_pack_32()
+    {
         $t = new Yatrie();
         $i = bindec('111111111111111111111111111111');
         $check = pack('V', $i);
         $this->assertEquals($check, $t->pack_32($i));
     }
 
-    public function test_unpack_32(){
+    /**
+     *
+     */
+    public function test_unpack_32()
+    {
         $t = new Yatrie();
         $i = bindec('111111111111111111111111111111');
         $packed = pack('V', $i);
@@ -538,7 +681,11 @@ class TestYatrie extends TestCase
         $this->assertEquals($check, $t->unpack_32($packed));
     }
 
-    public function test_unpack_16(){
+    /**
+     *
+     */
+    public function test_unpack_16()
+    {
         $t = new Yatrie();
         $i = bindec('1111111111111111');
         $packed = pack('v', $i);
@@ -546,19 +693,94 @@ class TestYatrie extends TestCase
         $this->assertEquals($check, $t->unpack_16($packed));
     }
 
-    public function test_pack_64(){
+    /**
+     *
+     */
+    public function test_pack_64()
+    {
         $t = new Yatrie();
         $i = bindec('111111111111111111111111111111111111111111111111111111111111');
         $check = pack('P', $i);
         $this->assertEquals($check, $t->pack_64($i));
     }
 
-    public function test_unpack_64(){
+    /**
+     *
+     */
+    public function test_unpack_64()
+    {
         $t = new Yatrie();
         $i = bindec('111111111111111111111111111111111111111111111111111111111111');
-        $packed = pack('P',$i);
+        $packed = pack('P', $i);
         $check = unpack('P', $packed)[1];
         $this->assertEquals($check, $t->unpack_64($packed));
+    }
+
+
+    /**
+     * @param int $id
+     * @param string $char
+     * @test
+     * @dataProvider data_node_set_char_flag
+     */
+    public function test_node_set_char_flag(int $id)
+    {
+        $t = new Reflect(new Yatrie());
+        $t->node_set_char_flag($id);
+
+        //check flag bit
+        $this->assertEquals($t->bit_set(0, $t->codepage['flag']), $t->node_get_children($id));
+    }
+
+    /**
+     * @param int $id
+     * @param string $char
+     * @test
+     * @dataProvider data_node_set_char_flag
+     */
+    public function test_node_get_char_flag(int $id)
+    {
+        $t = new Reflect(new Yatrie());
+
+        $this->assertFalse($t->node_get_char_flag($id));
+
+        $t->node_set_char_flag($id);
+        $this->assertTrue($t->node_get_char_flag($id));
+    }
+
+    /**
+     * @param int $id
+     * @param string $char
+     * @test
+     * @dataProvider data_node_set_char_flag
+     */
+    public function test_node_clear_char_flag(int $id)
+    {
+        $t = new Reflect(new Yatrie());
+        $t->node_set_char_flag($id);
+        $this->assertTrue($t->node_get_char_flag($id));
+        $t->node_clear_char_flag($id);
+        $this->assertFalse($t->node_get_char_flag($id));
+    }
+
+    public function data_node_set_char_flag()
+    {
+        return [[0], [1], [2], [3], [4]];
+    }
+
+    /**
+     *
+     */
+    protected function setUp()
+    {
+
+    }
+
+    /**
+     *
+     */
+    protected function tearDown()
+    {
     }
 
 }

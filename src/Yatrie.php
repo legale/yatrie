@@ -29,7 +29,7 @@ class Yatrie
         6 => 39, 7 => 40, 8 => 41, 9 => 42, '-' => 43, '\'' => 44, '’' => 45,);
 
 
-    public function __construct(string $dic = '')
+    public function __construct(string $dic = null)
     {
         $this->char_count = count($this->codepage_index);    //codepage
         //each node are 6 bytes "children mask"  + 2 bytes * chars qty "node refs"
@@ -53,6 +53,7 @@ class Yatrie
                 ++$i;
             }
             gzclose($fp);
+
             $this->id = $this->node_get_last_id();
         }
 
@@ -60,12 +61,8 @@ class Yatrie
 
     public function node_get_last_id()
     {
-        if (!is_array($this->dic)) {
-            $len = strlen($this->dic);
-            $cnt = $len / $this->size_node - 1;
-            return $cnt;
-        }
-        $block = reset($this->dic);
+
+        $block = end($this->dic);
         $block_last = key($this->dic);
         $len = strlen($block);
         $cnt = $len / $this->size_node - 1;
@@ -90,11 +87,7 @@ class Yatrie
     //this method return trie dictionary block
     public function &trie(int $id)
     {
-        if (!is_array($this->dic)) {
-            return $this->dic;
-        } else {
-            $block = (int)floor($this->id / $this->size_block);
-        }
+        $block = (int)floor($this->id / $this->size_block);
         return $this->dic[$block];
     }
 
@@ -119,6 +112,18 @@ class Yatrie
 //         print __METHOD__." id:$id  id_rel:$id_rel char_index:$char_index offset:$offset ref:$ref\n";
         $sub = $this->pack_24($ref);
         return $trie = substr($trie, 0, $offset) . $sub . substr($trie, $offset + $this->size_ref);
+    }
+
+    public function node_char_get_ref(int $parent_id, string $char)
+    {
+//        print "parent:$parent_id char:$char\n";
+        $mask = $this->node_get_children($parent_id);
+
+        if ($this->bit_check($mask, $this->codepage[$char])) {
+            return $this->node_get_ref($parent_id, $this->codepage_index[$char]);
+        } else {
+            return false;
+        }
     }
 
     public function node_get_ref(int $id, int $char_index)
@@ -244,7 +249,7 @@ class Yatrie
         $id = $this->codepage_index[$abc[0]];
 
         for ($i = 1; $i < $cnt; ++$i) {
-            $id = $this->trie_get_char($id, $abc[$i]);
+            $id = $this->node_char_get_ref($id, $abc[$i]);
         }
 
         $mask = $this->node_get_children($id);
@@ -271,20 +276,6 @@ class Yatrie
         return $this->node_set_char_flag($id);
     }
 
-
-    public function trie_get_char(int $parent_id, string $char)
-    {
-//        print "parent:$parent_id char:$char\n";
-
-        $mask = $this->node_get_children($parent_id);
-
-        if ($this->bit_check($mask, $this->codepage[$char])) {
-            return $this->node_get_ref($parent_id, $this->codepage_index[$char]);
-        } else {
-            return false;
-        }
-    }
-
     public function trie_add_char(int $parent_id, string $char)
     {
 //print "parent:$parent_id char:$char\n";
@@ -294,7 +285,7 @@ class Yatrie
 //print "char: $char parent_id: $parent_id  mask: $str\n";
 
         if ($this->bit_check($mask, $this->codepage[$char])) {
-            $id = $this->node_get_ref($parent_id, $this->codepage_index[$char]);
+            $ref_id = $this->node_get_ref($parent_id, $this->codepage_index[$char]);
 //            print "ref:$id\n";
         } else {
             $this->bit_set($mask, $this->codepage[$char]);
@@ -306,14 +297,14 @@ class Yatrie
 //print "saved char: $char mask: $str\n";
 
             $this->node_make();
-            $id = $this->id;
-            $this->node_save_ref($parent_id, $this->char_index($char), $this->id);
+            $ref_id = $this->id;
+            $this->node_save_ref($parent_id, $this->codepage_index[$char], $ref_id);
 
 //            $ref = $this->node_get_ref($parent_id, $this->char_index($char));
 //            print "after create: $id ref:$ref\n";
         }
 
-        return $id;
+        return $ref_id;
     }
 
 
@@ -333,7 +324,7 @@ class Yatrie
                 $this->node_save_children($id, 0);
             }
 
-            $id = $this->trie_get_char($id, $abc[$i]);
+            $id = $this->node_char_get_ref($id, $abc[$i]);
         }
         return $this->node_clear_char_flag($id);
     }
@@ -346,7 +337,7 @@ class Yatrie
         $id = $this->codepage_index[$abc[0]];
 
         for ($i = 1; $i < $cnt; ++$i) {
-            $id = $this->trie_get_char($id, $abc[$i]);
+            $id = $this->node_char_get_ref($id, $abc[$i]);
         }
 
         return $this->node_get_char_flag($id);
