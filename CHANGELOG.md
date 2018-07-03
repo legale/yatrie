@@ -1,5 +1,8 @@
+### v0.0.3b1
+- More tests added
+
 ### v0.0.3
-- basic functions optimizations unpack_24(), unpack_48() now works 
+- Basic functions optimizations unpack_24(), unpack_48() now works 
 without str_pad()
 - Added more tests
 
@@ -7,4 +10,4 @@ without str_pad()
 - Few tests added
 
 ### v0.0.1
-- very first version
+- Very first version
