@@ -38,7 +38,7 @@ class TestYatrie extends TestCase
     /**
      * @return array
      */
-    public function data_bit_check()
+    public function data_bit_get()
     {
         return [
             ['1', 1, true], ['1', 2, false], ['101011', 3, false], ['101011', 4, true]
@@ -199,15 +199,15 @@ class TestYatrie extends TestCase
     }
 
     /**
-     * @dataProvider data_bit_check
+     * @dataProvider data_bit_get
      */
-    public function test_bit_check(string $mask, int $bit, string $expected)
+    public function test_bit_get(string $mask, int $bit, string $expected)
     {
         $c = new Yatrie();
         $this->class = new Reflect($c);
         $t = &$this->class;
         $mask = bindec($mask);
-        $res = $t->bit_check($mask, $bit);
+        $res = $t->bit_get($mask, $bit);
         $this->assertEquals($res, $expected);
     }
 
@@ -272,7 +272,7 @@ class TestYatrie extends TestCase
 
         foreach ($words as $word) {
             $parent_id = $id;
-            foreach ($t->str_split_rus($word) as $char) {
+            foreach ($t->str_split_rus_mod($word) as $char) {
                 $parent_id = $t->trie_add_char($parent_id, $char);
             }
         }
@@ -763,10 +763,86 @@ class TestYatrie extends TestCase
         $this->assertFalse($t->node_get_char_flag($id));
     }
 
+    /**
+     * @return array
+     */
     public function data_node_set_char_flag()
     {
         return [[0], [1], [2], [3], [4]];
     }
+
+
+    /**
+     * @param string $word
+     * @test
+     * @dataProvider data_trie_add
+     */
+    public function test_trie_add(string $word)
+    {
+        $t = new Reflect(new Yatrie());
+        $last_id = $t->trie_add($word);
+
+        $chars = $t->str_split_rus_mod($word);
+        //first char node id
+        $id = $t->codepage_index[$chars[0]];
+        $len = count($chars);
+
+        for ($i = 1; $i < $len; ++$i) {
+            $id = $t->node_char_get_ref($id, $chars[$i]);
+            $this->assertNotFalse($id);
+        }
+
+        //check $last_id and last $id in chain
+        $this->assertEquals($last_id, $id);
+        //check last char flag
+        $this->assertTrue($t->node_get_char_flag($id));
+
+    }
+
+    /**
+     * @return array
+     */
+    public function data_trie_add(){
+        return [["а"], ["я"], ["один"], ["два"], ["тысячатристашестьдесятвосемь"]];
+    }
+
+    /**
+     * @param string $word
+     * @test
+     * @dataProvider data_trie_add
+     */
+    public function test_trie_remove(string $word)
+    {
+        $nodes = []; //used nodes array
+        $t = new Reflect(new Yatrie());
+        $last_id = $t->trie_add($word);
+
+        $chars = $t->str_split_rus_mod($word);
+        //first char node id
+
+        $id = $t->codepage_index[$chars[0]];
+        $nodes[$id] = $chars[0];
+        $len = count($chars);
+
+        for ($i = 1; $i < $len; ++$i) {
+            $id = $t->node_char_get_ref($id, $chars[$i]);
+            $nodes[$id] = $chars[$i];
+            $this->assertNotFalse($id);
+        }
+
+        $t->trie_remove($word);
+
+        //check if char flag cleared
+        $this->assertFalse($t->node_get_char_flag($last_id));
+
+        //nodes check
+        foreach($nodes as $id=>$char){
+            $mask = $t->node_get_children($id);
+            $check = $t->bit_get($mask, $t->codepage[$char]);
+            $this->assertFalse($check);
+        }
+    }
+
 
     /**
      *

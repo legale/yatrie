@@ -1,20 +1,53 @@
 <?php
 
+/**
+ * Class Yatrie
+ */
 class Yatrie
 {
-    public $dic, $char_count, $size_refs, $size_node;
-    //this is node id variable increment when creating new node by node_make() function
-    //minus 1 start value because first id is 0
+
+    /**
+     * @var
+     */
+    public $dic;
+    /**
+     * @var int
+     */
+    public $char_count;
+    /**
+     * @var float|int
+     */
+    public $size_refs;
+    /**
+     * @var float|int
+     */
+    public $size_node;
+    /**
+     * this is node id variable increment when creating new node by node_make() function
+     * minus 1 start value because first id is 0
+     * @var int
+     */
     public $id = -1;
+    /**
+     * @var int
+     */
     public $size_block = 3000; //number of nodes in 1 dictionary block
+    /**
+     * @var int
+     */
     public $size_mask = 6; //6 bytes are 48 bits. Children bitmask and "last word letter flag"
+    /**
+     * @var int
+     */
     public $size_ref = 3; // reference size. Each node has 6 bytes mask + references * char qty
 
-//this is sample codepage used for tests1
-//    public $codepage = array('а' => 1, 'б' => 2, 'в' => 3, 'г' => 4, 'д' => 5, 'flag' => 6);
-//    public $codepage_index = array('а' => 0, 'б' => 1, 'в' => 2, 'г' => 3, 'д' => 4);
 
-
+    /**
+     * this is sample codepage used for tests1
+     * public $codepage = array('а' => 1, 'б' => 2, 'в' => 3, 'г' => 4, 'д' => 5, 'flag' => 6);
+     * public $codepage_index = array('а' => 0, 'б' => 1, 'в' => 2, 'г' => 3, 'д' => 4);
+     * @var array
+     */
     public $codepage = array('а' => 1, 'б' => 2, 'в' => 3, 'г' => 4,
         'д' => 5, 'е' => 6, 'ё' => 7, 'ж' => 8, 'з' => 9, 'и' => 10, 'й' => 11, 'к' => 12, 'л' => 13, 'м' => 14,
         'н' => 15, 'о' => 16, 'п' => 17, 'р' => 18, 'с' => 19, 'т' => 20, 'у' => 21, 'ф' => 22, 'х' => 23, 'ц' => 24,
@@ -22,6 +55,9 @@ class Yatrie
         1 => 35, 2 => 36, 3 => 37, 4 => 38, 5 => 39, 6 => 40, 7 => 41, 8 => 42, 9 => 43, '-' => 44,
         '\'' => 45, '’' => 46, 'flag' => 47);
 
+    /**
+     * @var array
+     */
     public $codepage_index = array('а' => 0, 'б' => 1, 'в' => 2, 'г' => 3, 'д' => 4, 'е' => 5, 'ё' => 6, 'ж' => 7,
         'з' => 8, 'и' => 9, 'й' => 10, 'к' => 11, 'л' => 12, 'м' => 13, 'н' => 14, 'о' => 15, 'п' => 16, 'р' => 17,
         'с' => 18, 'т' => 19, 'у' => 20, 'ф' => 21, 'х' => 22, 'ц' => 23, 'ч' => 24, 'ш' => 25, 'щ' => 26, 'ъ' => 27,
@@ -29,6 +65,10 @@ class Yatrie
         6 => 39, 7 => 40, 8 => 41, 9 => 42, '-' => 43, '\'' => 44, '’' => 45,);
 
 
+    /**
+     * Yatrie constructor.
+     * @param string|null $dic
+     */
     public function __construct(string $dic = null)
     {
         $this->char_count = count($this->codepage_index);    //codepage
@@ -40,6 +80,9 @@ class Yatrie
         return;
     }
 
+    /**
+     * @param string|null $dic
+     */
     public function init_trie(string $dic = null)
     {
         if (empty($dic)) {
@@ -59,6 +102,9 @@ class Yatrie
 
     }
 
+    /**
+     * @return float|int
+     */
     public function node_get_last_id()
     {
 
@@ -69,6 +115,9 @@ class Yatrie
         return $block_last * $this->size_block + $cnt;
     }
 
+    /**
+     * @return bool
+     */
     public function layer_make_empty()
     {
         //create empty dic
@@ -79,18 +128,32 @@ class Yatrie
         return true;
     }
 
+    /**
+     * @param int $size
+     * @return string
+     */
     public function str_pad_null(int $size = 0)
     {
         return str_repeat("\0", $size);
     }
 
-    //this method return trie dictionary block
+
+    /**
+     * this method return trie dictionary block
+     * @param int $id
+     * @return mixed
+     */
     public function &trie(int $id)
     {
         $block = (int)floor($this->id / $this->size_block);
         return $this->dic[$block];
     }
 
+    /**
+     * @param string|null $mask
+     * @param string|null $refs
+     * @return int
+     */
     public function node_make(string $mask = null, string $refs = null)
     {
         $trie = &$this->trie(++$this->id);
@@ -103,6 +166,12 @@ class Yatrie
         return $this->id;
     }
 
+    /**
+     * @param int $id
+     * @param int $char_index
+     * @param int $ref
+     * @return string
+     */
     public function node_save_ref(int $id, int $char_index, int $ref)
     {
         $trie = &$this->trie($id);
@@ -114,18 +183,28 @@ class Yatrie
         return $trie = substr($trie, 0, $offset) . $sub . substr($trie, $offset + $this->size_ref);
     }
 
+    /**
+     * @param int $parent_id
+     * @param string $char
+     * @return bool|int
+     */
     public function node_char_get_ref(int $parent_id, string $char)
     {
 //        print "parent:$parent_id char:$char\n";
         $mask = $this->node_get_children($parent_id);
 
-        if ($this->bit_check($mask, $this->codepage[$char])) {
+        if ($this->bit_get($mask, $this->codepage[$char])) {
             return $this->node_get_ref($parent_id, $this->codepage_index[$char]);
         } else {
             return false;
         }
     }
 
+    /**
+     * @param int $id
+     * @param int $char_index
+     * @return int
+     */
     public function node_get_ref(int $id, int $char_index)
     {
         $trie = &$this->trie($id);
@@ -140,6 +219,11 @@ class Yatrie
         return $res;
     }
 
+    /**
+     * @param int $id
+     * @param int $mask
+     * @return string
+     */
     public function node_save_children(int $id, int $mask)
     {
         $trie = &$this->trie($id);
@@ -150,6 +234,10 @@ class Yatrie
     }
 
 
+    /**
+     * @param int $id
+     * @return int
+     */
     public function node_get_children(int $id)
     {
         $trie = &$this->trie($id);
@@ -161,64 +249,112 @@ class Yatrie
         return $this->unpack_48(substr($trie, $offset, $this->size_mask));
     }
 
+    /**
+     * @param int $i
+     * @return string
+     */
     public function pack_16(int $i)
     {
         return pack('v', $i);
     }
 
+    /**
+     * @param string $str
+     * @return mixed
+     */
     public function unpack_16(string $str)
     {
         return unpack('v', $str)[1];
     }
 
+    /**
+     * @param int $i
+     * @return string
+     */
     public function pack_32(int $i)
     {
         return pack('V', $i);
     }
 
+    /**
+     * @param string $str
+     * @return mixed
+     */
     public function unpack_32(string $str)
     {
         return unpack('V', $str)[1];
     }
 
+    /**
+     * @param int $i
+     * @return string
+     */
     public function pack_64(int $i)
     {
         return pack('P', $i);
     }
 
+    /**
+     * @param string $str
+     * @return mixed
+     */
     public function unpack_64(string $str)
     {
         return unpack('P', $str)[1];
     }
 
+    /**
+     * @param int $i
+     * @return bool|string
+     */
     public function pack_48(int $i)
     {
         return substr(pack('P', $i), 0, 6);
     }
 
+    /**
+     * @param string $str
+     * @return float|int
+     */
     public function unpack_mod(string $str)
     {
         return hexdec(strrev(unpack('h*', $str)[1]));
     }
 
 
+    /**
+     * @param int $i
+     * @return bool|string
+     */
     public function pack_24(int $i)
     {
         return substr(pack('V', $i), 0, 3);
     }
 
 
+    /**
+     * @param string $str
+     * @return int
+     */
     function unpack_24(string $str)
     {
         return (ord($str[2]) << 16) + (ord($str[1]) << 8) + ord($str[0]);
     }
 
 
+    /**
+     * @param string $str
+     * @return int
+     */
     function unpack_48(string $str)
     {
         return (ord($str[5]) << 40) + (ord($str[4]) << 32) + (ord($str[3]) << 24) + (ord($str[2]) << 16) + (ord($str[1]) << 8) + ord($str[0]);
     }
 
+    /**
+     * @param int $id
+     * @return string
+     */
     public function node_clear_char_flag(int $id)
     {
         $mask = $this->node_get_children($id);
@@ -226,12 +362,20 @@ class Yatrie
         return $this->node_save_children($id, $mask);
     }
 
+    /**
+     * @param int $id
+     * @return bool
+     */
     public function node_get_char_flag(int $id)
     {
         $mask = $this->node_get_children($id);
-        return $this->bit_check($mask, $this->codepage['flag']);
+        return $this->bit_get($mask, $this->codepage['flag']);
     }
 
+    /**
+     * @param int $id
+     * @return string
+     */
     public function node_set_char_flag(int $id)
     {
 //        print "add flag id:$id\n";
@@ -240,6 +384,10 @@ class Yatrie
         return $this->node_save_children($id, $mask);
     }
 
+    /**
+     * @param string $word
+     * @return string
+     */
     public function trie_list(string $word)
     {
         $abc = $this->str_split_rus_mod($word);
@@ -257,6 +405,10 @@ class Yatrie
     }
 
 
+    /**
+     * @param string $word
+     * @return string
+     */
     public function trie_add(string $word)
     {
 //        print "word: $word\n";
@@ -273,9 +425,15 @@ class Yatrie
         }
         //add last char flag for the last char
 //print "last char $id\n";
-        return $this->node_set_char_flag($id);
+        $this->node_set_char_flag($id);
+        return $id;
     }
 
+    /**
+     * @param int $parent_id
+     * @param string $char
+     * @return int
+     */
     public function trie_add_char(int $parent_id, string $char)
     {
 //print "parent:$parent_id char:$char\n";
@@ -284,7 +442,7 @@ class Yatrie
         $str = decbin($mask);
 //print "char: $char parent_id: $parent_id  mask: $str\n";
 
-        if ($this->bit_check($mask, $this->codepage[$char])) {
+        if ($this->bit_get($mask, $this->codepage[$char])) {
             $ref_id = $this->node_get_ref($parent_id, $this->codepage_index[$char]);
 //            print "ref:$id\n";
         } else {
@@ -308,6 +466,10 @@ class Yatrie
     }
 
 
+    /**
+     * @param string $word
+     * @return string
+     */
     public function trie_remove(string $word)
     {
         $abc = $this->str_split_rus_mod($word);
@@ -318,17 +480,22 @@ class Yatrie
         for ($i = 1; $i < $cnt; ++$i) {
             //get children
             $mask = $this->node_get_children($id);
+            //var_dump($this->bit_count($mask));
             //count children
-            //if children are more than one we can delete this node
-            if ($this->bit_count($mask) > 1) {
+            //if children are less than 2 we can delete this node
+            if ($this->bit_count($mask) < 2) {
                 $this->node_save_children($id, 0);
             }
 
-            $id = $this->node_char_get_ref($id, $abc[$i]);
+            $id = $this->node_get_ref($id, $this->codepage_index[$abc[$i]]);
         }
         return $this->node_clear_char_flag($id);
     }
 
+    /**
+     * @param string $word
+     * @return bool
+     */
     public function trie_check(string $word)
     {
         $abc = $this->str_split_rus_mod($word);
@@ -344,24 +511,43 @@ class Yatrie
     }
 
 
+    /**
+     * @param int $bitmap
+     * @param int $bit
+     * @return int
+     */
     private function bit_set(int &$bitmap, int $bit)
     {
         $bitmap |= 1 << $bit - 1;
         return $bitmap;
     }
 
+    /**
+     * @param int $bitmap
+     * @param int $bit
+     * @return bool|int
+     */
     private function bit_clear(int &$bitmap, int $bit)
     {
         $bitmap &= ~(1 << $bit - 1);
         return $bitmap;
     }
 
-    private function bit_check(int $bitmap, int $bit)
+    /**
+     * @param int $bitmap
+     * @param int $bit
+     * @return bool
+     */
+    private function bit_get(int $bitmap, int $bit)
     {
         return (bool)(($bitmap >> $bit - 1) & 1);
     }
 
 
+    /**
+     * @param int $bmask
+     * @return int
+     */
     private function bit_count(int $bmask)
     {
         $cnt = 0;
@@ -372,7 +558,11 @@ class Yatrie
         return $cnt;
     }
 
-    private function str_split_rus_mod(string $word)
+    /**
+     * @param string $word
+     * @return array|bool
+     */
+    public function str_split_rus_mod(string $word)
     {
         $byte3 = array('’' => 'e28099',);
 
@@ -414,6 +604,10 @@ class Yatrie
     }
 
 
+    /**
+     * @param string $word
+     * @return array|bool
+     */
     private function str_split_rus(string $word)
     {
         $byte3 = array('e28099' => '’');

@@ -1,3 +1,7 @@
+### v0.0.4
+- More tests added
+- Bug fixes found on tests
+
 ### v0.0.3b1
 - More tests added
 
