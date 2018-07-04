@@ -143,7 +143,7 @@ class TestYatrie extends TestCase
      */
     public function data_trie()
     {
-        return [[0], [1], [1000], [5000], [10000], [20000],];
+        return [[0, 0], [1, 1], [1000, 999], [5000, 2500], [10000, 1234], [20000, 15555],];
     }
 
     /**
@@ -227,7 +227,7 @@ class TestYatrie extends TestCase
     /**
      * @return array
      */
-    public function node_char_get_ref_data()
+    public function data_node_char_get_ref()
     {
         //parend node id, word
         return [
@@ -241,7 +241,7 @@ class TestYatrie extends TestCase
     /**
      * @return array
      */
-    public function trie_add_char_dataProvider()
+    public function data_trie_add_char()
     {
         //parend node id, words to add, returned reference id
         return [
@@ -263,7 +263,7 @@ class TestYatrie extends TestCase
      * @param string $char
      * @param string $expected
      * @test
-     * @dataProvider trie_add_char_dataProvider
+     * @dataProvider data_trie_add_char
      */
     public function test_trie_add_char(int $id, array $words, int $expected)
     {
@@ -284,7 +284,7 @@ class TestYatrie extends TestCase
      * @param string $char
      * @param string $expected
      * @test
-     * @dataProvider node_char_get_ref_data
+     * @dataProvider data_node_char_get_ref
      */
     public function test_node_char_get_ref(int $id, string $word)
     {
@@ -538,7 +538,7 @@ class TestYatrie extends TestCase
      * @test
      * @dataProvider data_trie
      */
-    public function test_trie(int $nodes)
+    public function test_trie(int $nodes, int $id)
     {
         $t = new Yatrie();
 
@@ -547,16 +547,17 @@ class TestYatrie extends TestCase
             $t->node_make();
         }
 
-        //block expected
-        $expected = (int)floor($t->id / $t->size_block);
+        //block index expected
+        $block_index = (int)floor($id / $t->size_block);
+
         //write test value to the block
-        $t->dic[$expected] = 'hit';
+        $t->dic[$block_index] = "hit $block_index";
 
         //returned block
-        $block = $t->trie($t->id);
+        $block = $t->trie($id);
 
         //check returned block nulber
-        $this->assertEquals($t->dic[$expected], $block);
+        $this->assertEquals($t->dic[$block_index], $block);
 
     }
 
@@ -802,7 +803,8 @@ class TestYatrie extends TestCase
     /**
      * @return array
      */
-    public function data_trie_add(){
+    public function data_trie_add()
+    {
         return [["а"], ["я"], ["один"], ["два"], ["тысячатристашестьдесятвосемь"]];
     }
 
@@ -836,7 +838,7 @@ class TestYatrie extends TestCase
         $this->assertFalse($t->node_get_char_flag($last_id));
 
         //nodes check
-        foreach($nodes as $id=>$char){
+        foreach ($nodes as $id => $char) {
             $mask = $t->node_get_children($id);
             $check = $t->bit_get($mask, $t->codepage[$char]);
             $this->assertFalse($check);

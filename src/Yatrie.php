@@ -43,7 +43,7 @@ class Yatrie
 
 
     /**
-     * this is sample codepage used for tests1
+     * this is sample codepage used for tests
      * public $codepage = array('а' => 1, 'б' => 2, 'в' => 3, 'г' => 4, 'д' => 5, 'flag' => 6);
      * public $codepage_index = array('а' => 0, 'б' => 1, 'в' => 2, 'г' => 3, 'д' => 4);
      * @var array
@@ -145,7 +145,7 @@ class Yatrie
      */
     public function &trie(int $id)
     {
-        $block = (int)floor($this->id / $this->size_block);
+        $block = (int)floor($id / $this->size_block);
         return $this->dic[$block];
     }
 

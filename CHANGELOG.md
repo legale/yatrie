@@ -1,3 +1,7 @@
+### v0.0.5
+- Bug fixes
+- Test test_trie() improvement
+
 ### v0.0.4
 - More tests added
 - Bug fixes found on tests

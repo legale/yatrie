@@ -5,7 +5,7 @@
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/legale/yatrie.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Flegale%2Fyatrie)
 
 
-# Yatrie v0.0.4
+# Yatrie v0.0.5
 Yet another PHP Trie Library 
 
 ## SETUP
