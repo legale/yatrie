@@ -1,3 +1,6 @@
+### v0.0.5b1
+- Demo dictionary dic_tiny.txt recompiled
+
 ### v0.0.5
 - Bug fixes
 - Test test_trie() improvement
