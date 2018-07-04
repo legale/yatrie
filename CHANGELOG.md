@@ -1,3 +1,6 @@
+### v0.0.6b1
+- trie_check() method bug fix.
+
 ### v0.0.6
 - One of the most expensive operations refactoring: 
 (int)floor($i / $size_block) replaced with $i >> 12 (12 is an exponent of 2. pow(2,12) ==== 4096)

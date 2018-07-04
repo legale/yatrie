@@ -507,6 +507,9 @@ class Yatrie
 
         for ($i = 1; $i < $cnt; ++$i) {
             $id = $this->node_char_get_ref($id, $abc[$i]);
+            if($id === false){
+                return false;
+            }
         }
 
         return $this->node_get_char_flag($id);
