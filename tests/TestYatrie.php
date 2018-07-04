@@ -805,7 +805,7 @@ class TestYatrie extends TestCase
      */
     public function data_trie_add()
     {
-        return [["а"], ["я"], ["один"], ["два"], ["тысячатристашестьдесятвосемь"]];
+        return [["а"], ["я"], ["один"], ["тысячатристашестьдесятвосемь"]];
     }
 
     /**
@@ -845,6 +845,31 @@ class TestYatrie extends TestCase
         }
     }
 
+
+    /**
+     * @param string $word
+     * @param string $check
+     * @test
+     * @dataProvider data_trie_check
+     */
+    public function test_trie_check(string $word, string $check){
+        $t = new Yatrie();
+        $last_id = $t->trie_add($word);
+
+        //check if the first word exist
+        $this->assertEquals($last_id, $t->trie_check($word));
+
+        //check if the second word is not exists
+        $this->assertFalse($t->trie_check($check));
+    }
+
+    public function data_trie_check(){
+        return [
+            ['а','б'],
+            ['аа','аб'],
+            ['человек','человека']
+        ];
+    }
 
     /**
      *

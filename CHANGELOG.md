@@ -1,3 +1,6 @@
+### v0.0.6b2
+- Added last test to achieve a full tests coverage.
+
 ### v0.0.6b1
 - trie_check() method bug fix.
 

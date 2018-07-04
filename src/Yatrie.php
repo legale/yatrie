@@ -386,26 +386,6 @@ class Yatrie
         return $this->node_save_children($id, $mask);
     }
 
-    /**
-     * @param string $word
-     * @return string
-     */
-    public function trie_list(string $word)
-    {
-        $abc = $this->str_split_rus_mod($word);
-        $cnt = count($abc);
-
-        //this is the first letter
-        $id = $this->codepage_index[$abc[0]];
-
-        for ($i = 1; $i < $cnt; ++$i) {
-            $id = $this->node_char_get_ref($id, $abc[$i]);
-        }
-
-        $mask = $this->node_get_children($id);
-        return decbin($mask);
-    }
-
 
     /**
      * @param string $word
@@ -512,7 +492,7 @@ class Yatrie
             }
         }
 
-        return $this->node_get_char_flag($id);
+        return $this->node_get_char_flag($id) === false ? false : $id;
     }
 
 
