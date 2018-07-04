@@ -1,218 +1,218 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1530662802">
-  <project timestamp="1530662802">
+<coverage generated="1530693799">
+  <project timestamp="1530693799">
     <file name="D:\OSPanel\domains\Yatrie\src/Yatrie.php">
       <class name="Yatrie" namespace="global">
         <metrics complexity="56" methods="37" coveredmethods="35" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="156" elements="206" coveredelements="191"/>
       </class>
-      <line num="72" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="123"/>
-      <line num="74" type="stmt" count="123"/>
+      <line num="74" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="123"/>
       <line num="76" type="stmt" count="123"/>
-      <line num="77" type="stmt" count="123"/>
       <line num="78" type="stmt" count="123"/>
+      <line num="79" type="stmt" count="123"/>
       <line num="80" type="stmt" count="123"/>
-      <line num="86" type="method" name="init_trie" visibility="public" complexity="3" crap="3" count="123"/>
-      <line num="88" type="stmt" count="123"/>
-      <line num="89" type="stmt" count="122"/>
-      <line num="91" type="stmt" count="1"/>
-      <line num="92" type="stmt" count="1"/>
+      <line num="82" type="stmt" count="123"/>
+      <line num="88" type="method" name="init_trie" visibility="public" complexity="3" crap="3" count="123"/>
+      <line num="90" type="stmt" count="123"/>
+      <line num="91" type="stmt" count="122"/>
       <line num="93" type="stmt" count="1"/>
       <line num="94" type="stmt" count="1"/>
       <line num="95" type="stmt" count="1"/>
       <line num="96" type="stmt" count="1"/>
+      <line num="97" type="stmt" count="1"/>
       <line num="98" type="stmt" count="1"/>
       <line num="100" type="stmt" count="1"/>
-      <line num="103" type="stmt" count="123"/>
-      <line num="108" type="method" name="node_get_last_id" visibility="public" complexity="1" crap="1" count="5"/>
-      <line num="111" type="stmt" count="5"/>
-      <line num="112" type="stmt" count="5"/>
+      <line num="102" type="stmt" count="1"/>
+      <line num="105" type="stmt" count="123"/>
+      <line num="110" type="method" name="node_get_last_id" visibility="public" complexity="1" crap="1" count="5"/>
       <line num="113" type="stmt" count="5"/>
       <line num="114" type="stmt" count="5"/>
       <line num="115" type="stmt" count="5"/>
-      <line num="121" type="method" name="layer_make_empty" visibility="public" complexity="2" crap="2" count="123"/>
-      <line num="124" type="stmt" count="123"/>
-      <line num="125" type="stmt" count="123"/>
+      <line num="116" type="stmt" count="5"/>
+      <line num="117" type="stmt" count="5"/>
+      <line num="123" type="method" name="layer_make_empty" visibility="public" complexity="2" crap="2" count="123"/>
       <line num="126" type="stmt" count="123"/>
+      <line num="127" type="stmt" count="123"/>
       <line num="128" type="stmt" count="123"/>
-      <line num="135" type="method" name="str_pad_null" visibility="public" complexity="1" crap="1" count="137"/>
-      <line num="137" type="stmt" count="137"/>
-      <line num="146" type="method" name="trie" visibility="public" complexity="1" crap="1" count="133"/>
-      <line num="148" type="stmt" count="133"/>
-      <line num="149" type="stmt" count="133"/>
-      <line num="157" type="method" name="node_make" visibility="public" complexity="1" crap="1" count="133"/>
-      <line num="159" type="stmt" count="133"/>
-      <line num="160" type="stmt" count="133"/>
+      <line num="130" type="stmt" count="123"/>
+      <line num="137" type="method" name="str_pad_null" visibility="public" complexity="1" crap="1" count="137"/>
+      <line num="139" type="stmt" count="137"/>
+      <line num="148" type="method" name="trie" visibility="public" complexity="1" crap="1" count="133"/>
+      <line num="150" type="stmt" count="133"/>
+      <line num="151" type="stmt" count="133"/>
+      <line num="159" type="method" name="node_make" visibility="public" complexity="1" crap="1" count="133"/>
       <line num="161" type="stmt" count="133"/>
-      <line num="166" type="stmt" count="133"/>
-      <line num="175" type="method" name="node_save_ref" visibility="public" complexity="1" crap="1" count="25"/>
-      <line num="177" type="stmt" count="25"/>
+      <line num="162" type="stmt" count="133"/>
+      <line num="163" type="stmt" count="133"/>
+      <line num="168" type="stmt" count="133"/>
+      <line num="177" type="method" name="node_save_ref" visibility="public" complexity="1" crap="1" count="25"/>
       <line num="179" type="stmt" count="25"/>
-      <line num="180" type="stmt" count="25"/>
+      <line num="181" type="stmt" count="25"/>
       <line num="182" type="stmt" count="25"/>
-      <line num="183" type="stmt" count="25"/>
-      <line num="191" type="method" name="node_char_get_ref" visibility="public" complexity="2" crap="2" count="10"/>
-      <line num="194" type="stmt" count="10"/>
+      <line num="184" type="stmt" count="25"/>
+      <line num="185" type="stmt" count="25"/>
+      <line num="193" type="method" name="node_char_get_ref" visibility="public" complexity="2" crap="2" count="10"/>
       <line num="196" type="stmt" count="10"/>
-      <line num="197" type="stmt" count="10"/>
-      <line num="199" type="stmt" count="4"/>
-      <line num="208" type="method" name="node_get_ref" visibility="public" complexity="1" crap="1" count="23"/>
-      <line num="210" type="stmt" count="23"/>
+      <line num="198" type="stmt" count="10"/>
+      <line num="199" type="stmt" count="10"/>
+      <line num="201" type="stmt" count="4"/>
+      <line num="210" type="method" name="node_get_ref" visibility="public" complexity="1" crap="1" count="23"/>
       <line num="212" type="stmt" count="23"/>
-      <line num="215" type="stmt" count="23"/>
-      <line num="218" type="stmt" count="23"/>
-      <line num="219" type="stmt" count="23"/>
-      <line num="227" type="method" name="node_save_children" visibility="public" complexity="1" crap="1" count="44"/>
-      <line num="229" type="stmt" count="44"/>
+      <line num="214" type="stmt" count="23"/>
+      <line num="217" type="stmt" count="23"/>
+      <line num="220" type="stmt" count="23"/>
+      <line num="221" type="stmt" count="23"/>
+      <line num="229" type="method" name="node_save_children" visibility="public" complexity="1" crap="1" count="44"/>
       <line num="231" type="stmt" count="44"/>
-      <line num="232" type="stmt" count="44"/>
       <line num="233" type="stmt" count="44"/>
-      <line num="241" type="method" name="node_get_children" visibility="public" complexity="1" crap="1" count="49"/>
-      <line num="243" type="stmt" count="49"/>
+      <line num="234" type="stmt" count="44"/>
+      <line num="235" type="stmt" count="44"/>
+      <line num="243" type="method" name="node_get_children" visibility="public" complexity="1" crap="1" count="49"/>
       <line num="245" type="stmt" count="49"/>
-      <line num="246" type="stmt" count="49"/>
-      <line num="249" type="stmt" count="49"/>
-      <line num="256" type="method" name="pack_16" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="258" type="stmt" count="1"/>
-      <line num="265" type="method" name="unpack_16" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="267" type="stmt" count="1"/>
-      <line num="274" type="method" name="pack_32" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="276" type="stmt" count="1"/>
-      <line num="283" type="method" name="unpack_32" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="285" type="stmt" count="1"/>
-      <line num="292" type="method" name="pack_64" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="294" type="stmt" count="1"/>
-      <line num="301" type="method" name="unpack_64" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="303" type="stmt" count="1"/>
-      <line num="310" type="method" name="pack_48" visibility="public" complexity="1" crap="1" count="53"/>
-      <line num="312" type="stmt" count="53"/>
-      <line num="319" type="method" name="unpack_mod" visibility="public" complexity="1" crap="1" count="7"/>
-      <line num="321" type="stmt" count="7"/>
-      <line num="329" type="method" name="pack_24" visibility="public" complexity="1" crap="1" count="34"/>
-      <line num="331" type="stmt" count="34"/>
-      <line num="339" type="method" name="unpack_24" complexity="1" crap="1" count="34"/>
-      <line num="341" type="stmt" count="34"/>
-      <line num="349" type="method" name="unpack_48" complexity="1" crap="1" count="60"/>
-      <line num="351" type="stmt" count="60"/>
-      <line num="358" type="method" name="node_clear_char_flag" visibility="public" complexity="1" crap="1" count="10"/>
-      <line num="360" type="stmt" count="10"/>
-      <line num="361" type="stmt" count="10"/>
+      <line num="247" type="stmt" count="49"/>
+      <line num="248" type="stmt" count="49"/>
+      <line num="251" type="stmt" count="49"/>
+      <line num="258" type="method" name="pack_16" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="260" type="stmt" count="1"/>
+      <line num="267" type="method" name="unpack_16" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="269" type="stmt" count="1"/>
+      <line num="276" type="method" name="pack_32" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="278" type="stmt" count="1"/>
+      <line num="285" type="method" name="unpack_32" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="287" type="stmt" count="1"/>
+      <line num="294" type="method" name="pack_64" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="296" type="stmt" count="1"/>
+      <line num="303" type="method" name="unpack_64" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="305" type="stmt" count="1"/>
+      <line num="312" type="method" name="pack_48" visibility="public" complexity="1" crap="1" count="53"/>
+      <line num="314" type="stmt" count="53"/>
+      <line num="321" type="method" name="unpack_mod" visibility="public" complexity="1" crap="1" count="7"/>
+      <line num="323" type="stmt" count="7"/>
+      <line num="331" type="method" name="pack_24" visibility="public" complexity="1" crap="1" count="34"/>
+      <line num="333" type="stmt" count="34"/>
+      <line num="341" type="method" name="unpack_24" complexity="1" crap="1" count="34"/>
+      <line num="343" type="stmt" count="34"/>
+      <line num="351" type="method" name="unpack_48" complexity="1" crap="1" count="60"/>
+      <line num="353" type="stmt" count="60"/>
+      <line num="360" type="method" name="node_clear_char_flag" visibility="public" complexity="1" crap="1" count="10"/>
       <line num="362" type="stmt" count="10"/>
-      <line num="369" type="method" name="node_get_char_flag" visibility="public" complexity="1" crap="1" count="20"/>
-      <line num="371" type="stmt" count="20"/>
-      <line num="372" type="stmt" count="20"/>
-      <line num="379" type="method" name="node_set_char_flag" visibility="public" complexity="1" crap="1" count="25"/>
-      <line num="382" type="stmt" count="25"/>
-      <line num="383" type="stmt" count="25"/>
+      <line num="363" type="stmt" count="10"/>
+      <line num="364" type="stmt" count="10"/>
+      <line num="371" type="method" name="node_get_char_flag" visibility="public" complexity="1" crap="1" count="20"/>
+      <line num="373" type="stmt" count="20"/>
+      <line num="374" type="stmt" count="20"/>
+      <line num="381" type="method" name="node_set_char_flag" visibility="public" complexity="1" crap="1" count="25"/>
       <line num="384" type="stmt" count="25"/>
-      <line num="391" type="method" name="trie_list" visibility="public" complexity="2" crap="6.00" count="0"/>
-      <line num="393" type="stmt" count="0"/>
-      <line num="394" type="stmt" count="0"/>
-      <line num="397" type="stmt" count="0"/>
+      <line num="385" type="stmt" count="25"/>
+      <line num="386" type="stmt" count="25"/>
+      <line num="393" type="method" name="trie_list" visibility="public" complexity="2" crap="6.00" count="0"/>
+      <line num="395" type="stmt" count="0"/>
+      <line num="396" type="stmt" count="0"/>
       <line num="399" type="stmt" count="0"/>
-      <line num="400" type="stmt" count="0"/>
-      <line num="403" type="stmt" count="0"/>
-      <line num="404" type="stmt" count="0"/>
-      <line num="412" type="method" name="trie_add" visibility="public" complexity="2" crap="2" count="10"/>
-      <line num="415" type="stmt" count="10"/>
-      <line num="416" type="stmt" count="10"/>
-      <line num="419" type="stmt" count="10"/>
-      <line num="423" type="stmt" count="10"/>
-      <line num="424" type="stmt" count="6"/>
-      <line num="428" type="stmt" count="10"/>
-      <line num="429" type="stmt" count="10"/>
-      <line num="437" type="method" name="trie_add_char" visibility="public" complexity="2" crap="2" count="20"/>
-      <line num="441" type="stmt" count="20"/>
-      <line num="442" type="stmt" count="20"/>
-      <line num="445" type="stmt" count="20"/>
-      <line num="446" type="stmt" count="3"/>
-      <line num="449" type="stmt" count="20"/>
-      <line num="450" type="stmt" count="20"/>
+      <line num="401" type="stmt" count="0"/>
+      <line num="402" type="stmt" count="0"/>
+      <line num="405" type="stmt" count="0"/>
+      <line num="406" type="stmt" count="0"/>
+      <line num="414" type="method" name="trie_add" visibility="public" complexity="2" crap="2" count="10"/>
+      <line num="417" type="stmt" count="10"/>
+      <line num="418" type="stmt" count="10"/>
+      <line num="421" type="stmt" count="10"/>
+      <line num="425" type="stmt" count="10"/>
+      <line num="426" type="stmt" count="6"/>
+      <line num="430" type="stmt" count="10"/>
+      <line num="431" type="stmt" count="10"/>
+      <line num="439" type="method" name="trie_add_char" visibility="public" complexity="2" crap="2" count="20"/>
+      <line num="443" type="stmt" count="20"/>
+      <line num="444" type="stmt" count="20"/>
+      <line num="447" type="stmt" count="20"/>
+      <line num="448" type="stmt" count="3"/>
       <line num="451" type="stmt" count="20"/>
+      <line num="452" type="stmt" count="20"/>
       <line num="453" type="stmt" count="20"/>
-      <line num="454" type="stmt" count="20"/>
-      <line num="457" type="stmt" count="20"/>
-      <line num="458" type="stmt" count="20"/>
+      <line num="455" type="stmt" count="20"/>
+      <line num="456" type="stmt" count="20"/>
       <line num="459" type="stmt" count="20"/>
-      <line num="465" type="stmt" count="20"/>
-      <line num="473" type="method" name="trie_remove" visibility="public" complexity="3" crap="3" count="5"/>
-      <line num="475" type="stmt" count="5"/>
-      <line num="476" type="stmt" count="5"/>
+      <line num="460" type="stmt" count="20"/>
+      <line num="461" type="stmt" count="20"/>
+      <line num="467" type="stmt" count="20"/>
+      <line num="475" type="method" name="trie_remove" visibility="public" complexity="3" crap="3" count="5"/>
+      <line num="477" type="stmt" count="5"/>
       <line num="478" type="stmt" count="5"/>
       <line num="480" type="stmt" count="5"/>
-      <line num="482" type="stmt" count="3"/>
-      <line num="486" type="stmt" count="3"/>
-      <line num="487" type="stmt" count="3"/>
-      <line num="490" type="stmt" count="3"/>
-      <line num="492" type="stmt" count="5"/>
-      <line num="499" type="method" name="trie_check" visibility="public" complexity="2" crap="6.00" count="0"/>
-      <line num="501" type="stmt" count="0"/>
-      <line num="502" type="stmt" count="0"/>
+      <line num="482" type="stmt" count="5"/>
+      <line num="484" type="stmt" count="3"/>
+      <line num="488" type="stmt" count="3"/>
+      <line num="489" type="stmt" count="3"/>
+      <line num="492" type="stmt" count="3"/>
+      <line num="494" type="stmt" count="5"/>
+      <line num="501" type="method" name="trie_check" visibility="public" complexity="2" crap="6.00" count="0"/>
+      <line num="503" type="stmt" count="0"/>
       <line num="504" type="stmt" count="0"/>
       <line num="506" type="stmt" count="0"/>
-      <line num="507" type="stmt" count="0"/>
-      <line num="510" type="stmt" count="0"/>
-      <line num="519" type="method" name="bit_set" visibility="private" complexity="1" crap="1" count="44"/>
-      <line num="521" type="stmt" count="44"/>
-      <line num="522" type="stmt" count="44"/>
-      <line num="530" type="method" name="bit_clear" visibility="private" complexity="1" crap="1" count="15"/>
-      <line num="532" type="stmt" count="15"/>
-      <line num="533" type="stmt" count="15"/>
-      <line num="541" type="method" name="bit_get" visibility="private" complexity="1" crap="1" count="38"/>
-      <line num="543" type="stmt" count="38"/>
-      <line num="551" type="method" name="bit_count" visibility="private" complexity="2" crap="2" count="7"/>
-      <line num="553" type="stmt" count="7"/>
-      <line num="554" type="stmt" count="7"/>
+      <line num="508" type="stmt" count="0"/>
+      <line num="509" type="stmt" count="0"/>
+      <line num="512" type="stmt" count="0"/>
+      <line num="521" type="method" name="bit_set" visibility="private" complexity="1" crap="1" count="44"/>
+      <line num="523" type="stmt" count="44"/>
+      <line num="524" type="stmt" count="44"/>
+      <line num="532" type="method" name="bit_clear" visibility="private" complexity="1" crap="1" count="15"/>
+      <line num="534" type="stmt" count="15"/>
+      <line num="535" type="stmt" count="15"/>
+      <line num="543" type="method" name="bit_get" visibility="private" complexity="1" crap="1" count="38"/>
+      <line num="545" type="stmt" count="38"/>
+      <line num="553" type="method" name="bit_count" visibility="private" complexity="2" crap="2" count="7"/>
       <line num="555" type="stmt" count="7"/>
       <line num="556" type="stmt" count="7"/>
+      <line num="557" type="stmt" count="7"/>
       <line num="558" type="stmt" count="7"/>
-      <line num="565" type="method" name="str_split_rus_mod" visibility="public" complexity="5" crap="5" count="21"/>
-      <line num="567" type="stmt" count="21"/>
+      <line num="560" type="stmt" count="7"/>
+      <line num="567" type="method" name="str_split_rus_mod" visibility="public" complexity="5" crap="5" count="21"/>
       <line num="569" type="stmt" count="21"/>
-      <line num="575" type="stmt" count="21"/>
-      <line num="578" type="stmt" count="21"/>
-      <line num="579" type="stmt" count="21"/>
+      <line num="571" type="stmt" count="21"/>
+      <line num="577" type="stmt" count="21"/>
       <line num="580" type="stmt" count="21"/>
       <line num="581" type="stmt" count="21"/>
       <line num="582" type="stmt" count="21"/>
       <line num="583" type="stmt" count="21"/>
       <line num="584" type="stmt" count="21"/>
-      <line num="587" type="stmt" count="1"/>
-      <line num="588" type="stmt" count="1"/>
+      <line num="585" type="stmt" count="21"/>
+      <line num="586" type="stmt" count="21"/>
       <line num="589" type="stmt" count="1"/>
       <line num="590" type="stmt" count="1"/>
       <line num="591" type="stmt" count="1"/>
-      <line num="594" type="stmt" count="1"/>
-      <line num="595" type="stmt" count="1"/>
+      <line num="592" type="stmt" count="1"/>
+      <line num="593" type="stmt" count="1"/>
       <line num="596" type="stmt" count="1"/>
       <line num="597" type="stmt" count="1"/>
       <line num="598" type="stmt" count="1"/>
+      <line num="599" type="stmt" count="1"/>
       <line num="600" type="stmt" count="1"/>
-      <line num="603" type="stmt" count="21"/>
-      <line num="611" type="method" name="str_split_rus" visibility="private" complexity="5" crap="5" count="5"/>
-      <line num="613" type="stmt" count="5"/>
+      <line num="602" type="stmt" count="1"/>
+      <line num="605" type="stmt" count="21"/>
+      <line num="613" type="method" name="str_split_rus" visibility="private" complexity="5" crap="5" count="5"/>
       <line num="615" type="stmt" count="5"/>
-      <line num="623" type="stmt" count="5"/>
-      <line num="637" type="stmt" count="5"/>
-      <line num="638" type="stmt" count="5"/>
+      <line num="617" type="stmt" count="5"/>
+      <line num="625" type="stmt" count="5"/>
       <line num="639" type="stmt" count="5"/>
       <line num="640" type="stmt" count="5"/>
       <line num="641" type="stmt" count="5"/>
       <line num="642" type="stmt" count="5"/>
       <line num="643" type="stmt" count="5"/>
-      <line num="646" type="stmt" count="1"/>
-      <line num="647" type="stmt" count="1"/>
+      <line num="644" type="stmt" count="5"/>
+      <line num="645" type="stmt" count="5"/>
       <line num="648" type="stmt" count="1"/>
       <line num="649" type="stmt" count="1"/>
       <line num="650" type="stmt" count="1"/>
-      <line num="653" type="stmt" count="1"/>
-      <line num="654" type="stmt" count="1"/>
+      <line num="651" type="stmt" count="1"/>
+      <line num="652" type="stmt" count="1"/>
       <line num="655" type="stmt" count="1"/>
       <line num="656" type="stmt" count="1"/>
       <line num="657" type="stmt" count="1"/>
+      <line num="658" type="stmt" count="1"/>
       <line num="659" type="stmt" count="1"/>
-      <line num="661" type="stmt" count="5"/>
-      <metrics loc="664" ncloc="390" classes="1" methods="37" coveredmethods="35" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="156" elements="206" coveredelements="191"/>
+      <line num="661" type="stmt" count="1"/>
+      <line num="663" type="stmt" count="5"/>
+      <metrics loc="666" ncloc="388" classes="1" methods="37" coveredmethods="35" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="156" elements="206" coveredelements="191"/>
     </file>
-    <metrics files="1" loc="664" ncloc="390" classes="1" methods="37" coveredmethods="35" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="156" elements="206" coveredelements="191"/>
+    <metrics files="1" loc="666" ncloc="388" classes="1" methods="37" coveredmethods="35" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="156" elements="206" coveredelements="191"/>
   </project>
 </coverage>

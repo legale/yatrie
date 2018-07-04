@@ -4,6 +4,7 @@ require_once(dirname(__FILE__) . '/etc/bmark.php');
 
 $trie = new Yatrie();
 
+pow('','')
 var_dump( $trie->trie_add('а'));
 var_dump( $trie->trie_add('аа'));
 var_dump( $trie->trie_add('человекоподобный'));

@@ -1,3 +1,8 @@
+### v0.0.6
+- One of the most expensive operations refactoring: 
+(int)floor($i / $size_block) replaced with $i >> 12 (12 is an exponent of 2. pow(2,12) ==== 4096)
+$i % $size_block replaced with $i & 4095 (4095 is a value of size_block minus 1. $i % 4096 === $i & 4095)
+
 ### v0.0.5b1
 - Demo dictionary dic_tiny.txt recompiled
 

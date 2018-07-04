@@ -31,7 +31,9 @@ class Yatrie
     /**
      * @var int
      */
-    public $size_block = 3000; //number of nodes in 1 dictionary block
+    public $size_block = 4096; //number of nodes in 1 dictionary block
+    public $power = 12; //power of two to get $size_block value
+    public $mod = 4095; //value to get $i % $size_block. ($i & $mod === $i % $size_block)
     /**
      * @var int
      */
@@ -145,7 +147,7 @@ class Yatrie
      */
     public function &trie(int $id)
     {
-        $block = (int)floor($id / $this->size_block);
+        $block = $id >> $this->power;
         return $this->dic[$block];
     }
 
@@ -176,7 +178,7 @@ class Yatrie
     {
         $trie = &$this->trie($id);
         //node id relative to block
-        $id_rel = $id % $this->size_block;
+        $id_rel = $id & $this->mod;
         $offset = $id_rel * $this->size_node + $this->size_mask + $this->size_ref * $char_index;
 //         print __METHOD__." id:$id  id_rel:$id_rel char_index:$char_index offset:$offset ref:$ref\n";
         $sub = $this->pack_24($ref);
@@ -209,7 +211,7 @@ class Yatrie
     {
         $trie = &$this->trie($id);
         //node id relative to block
-        $id_rel = $id % $this->size_block;
+        $id_rel = $id & $this->mod;
 //        print "id:$id id_rel:$id_rel char_index:$char_index\n";
 
         $offset = $id_rel * $this->size_node + $this->size_mask + $this->size_ref * $char_index;
@@ -228,7 +230,7 @@ class Yatrie
     {
         $trie = &$this->trie($id);
         //node id relative to block
-        $id_rel = $id % $this->size_block;
+        $id_rel = $id & $this->mod;
         $offset = $id_rel * $this->size_node;
         return $trie = substr($trie, 0, $offset) . $this->pack_48($mask) . substr($trie, $offset + $this->size_mask);
     }
@@ -242,7 +244,7 @@ class Yatrie
     {
         $trie = &$this->trie($id);
         //node id relative to block
-        $id_rel = $id % $this->size_block;
+        $id_rel = $id & $this->mod;
         $offset = $id_rel * $this->size_node;
 //        print "len: " .strlen($trie)."\n";
 //        print __METHOD__." id:$id id_rel: $id_rel offset:$offset \n";
