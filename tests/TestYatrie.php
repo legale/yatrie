@@ -51,7 +51,7 @@ class TestYatrie extends TestCase
     public function data_bit_count()
     {
         return [
-            ['1', 1], ['11', 2], ['101011', 4], ['11010000', 3]
+            ['1', 1, 1], ['11', 1, 1], ['101011', 2, 3], ['11010000', 3, 8], ['111111111111111111111111111111111111111111111110', 47, 48]
         ];
     }
 
@@ -214,13 +214,13 @@ class TestYatrie extends TestCase
     /**
      * @dataProvider data_bit_count
      */
-    public function test_bit_count(string $mask, int $expected)
+    public function test_bit_count(string $mask, int $expected, int $length)
     {
         $c = new Yatrie();
         $this->class = new Reflect($c);
         $t = &$this->class;
         $mask = bindec($mask);
-        $res = $t->bit_count($mask);
+        $res = $t->bit_count($mask, $length);
         $this->assertEquals($res, $expected);
     }
 

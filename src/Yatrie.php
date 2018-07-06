@@ -533,14 +533,22 @@ class Yatrie
      * @param int $bmask
      * @return int
      */
-    private function bit_count(int $bmask)
+    private function bit_count(int $i, int $length = null)
     {
-        $cnt = 0;
-        while ($bmask != 0) {
-            $cnt++;
-            $bmask &= $bmask - 1;
+        if ($length > 0) {
+            $i &= (2 << $length - 1) - 1; // 2 << $i === pow(2,$i-1) bit shift is about 3% faster than pow()
         }
-        return $cnt;
+        $S = [1, 2, 4, 8, 16, 32];
+        $B = [0x5555555555555555, 0x3333333333333333, 0x0F0F0F0F0F0F0F0F, 0x00FF00FF00FF00FF, 0x0000FFFF0000FFFF, 0x000000FFFFFF];
+
+        $c = $i - (($i >> 1) & $B[0]);
+        $c = (($c >> $S[1]) & $B[1]) + ($c & $B[1]);
+        $c = (($c >> $S[2]) + $c) & $B[2];
+        $c = (($c >> $S[3]) + $c) & $B[3];
+        $c = (($c >> $S[4]) + $c) & $B[4];
+        $c = (($c >> $S[5]) + $c) & $B[5];
+
+        return $c;
     }
 
     /**

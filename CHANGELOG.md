@@ -1,3 +1,6 @@
+### v0.0.6b3
+- bit_count() optimized. Wegner bit count method replaced with Parallel method
+
 ### v0.0.6b2
 - Added last test to achieve a full tests coverage.
 
