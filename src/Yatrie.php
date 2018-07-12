@@ -6,20 +6,25 @@
 class Yatrie
 {
 
+    public $deal = []; //deallocated memory array to store deallocated memory blocks for the future reuse
     /**
-     * @var
+     * @var array
      */
-    public $dic;
+    public $refs = [];
+    /**
+     * @var array
+     */
+    public $nodes = [];
     /**
      * @var int
      */
     public $char_count;
     /**
-     * @var float|int
+     * @var int
      */
     public $size_refs;
     /**
-     * @var float|int
+     * @var int
      */
     public $size_node;
     /**
@@ -27,21 +32,32 @@ class Yatrie
      * minus 1 start value because first id is 0
      * @var int
      */
-    public $id = -1;
+    public $id_node = -1;
+    public $id_ref = -1;
     /**
      * @var int
      */
-    public $size_block = 4096; //number of nodes in 1 dictionary block
-    public $power = 12; //power of two to get $size_block value
-    public $mod = 4095; //value to get $i % $size_block. ($i & $mod === $i % $size_block)
+    public $size_block = 65536; //number of nodes in 1 nodes array block
+    public $power = 16; //power of two to get $size_block value
+    public $mod = 65535; //value to get $i % $size_block. ($i & $mod === $i % $size_block but faster)
+
+    public $size_block_refs = 131072; //number of refs in 1 refs array block
+    public $power_refs = 17; //power of two to get $size_block_refs value
+    public $mod_refs = 131071; //value to get $i % $size_block_refs. ($i & $mod_refs === $i % $size_block_refs but faster)
+
     /**
      * @var int
      */
     public $size_mask = 6; //6 bytes are 48 bits. Children bitmask and "last word letter flag"
+
     /**
      * @var int
      */
     public $size_ref = 3; // reference size. Each node has 6 bytes mask + references * char qty
+    /**
+     * @var int
+     **/
+    public $size_ref_id = 3; // node reference size.
 
 
     /**
@@ -71,66 +87,64 @@ class Yatrie
      * Yatrie constructor.
      * @param string|null $dic
      */
-    public function __construct(string $dic = null)
+    public function __construct(array $dic = null)
     {
-        $this->char_count = count($this->codepage_index);    //codepage
-        //each node are 6 bytes "children mask"  + 2 bytes * chars qty "node refs"
-        $this->size_refs = $this->size_ref * $this->char_count;
-        $this->size_node = $this->size_mask + $this->size_refs;
+        $this->char_count = count($this->codepage_index);
+        $this->size_node = $this->size_mask + $this->size_ref_id; //each node is a node mask + node reference to refs
         $this->init_trie($dic);
-
-        return;
     }
 
     /**
+     * trie initialization method
      * @param string|null $dic
      */
-    public function init_trie(string $dic = null)
+    public function init_trie(array $dic = null)
     {
         if (empty($dic)) {
             $this->layer_make_empty();
         } else {
-            $fp = gzopen($dic, 'r');
-            $i = 0;
-            $size = $this->size_block * $this->size_node;
+
+            //load last created ids from headers file
+            list($this->id_node, $this->id_ref) = unserialize(file_get_contents($dic[0]));
+
+            //load nodes
+            $string = '';
+            $fp = gzopen($dic[1], 'r');
             while (!feof($fp)) {
-                $this->dic[$i] = gzread($fp, $size);
-                ++$i;
+                $string .= gzread($fp, 999999);
             }
             gzclose($fp);
+            $this->nodes = unserialize($string);
 
-            $this->id = $this->node_get_last_id();
+            //load refs
+            $string = '';
+            $fp = gzopen($dic[2], 'r');
+            while (!feof($fp)) {
+                $string .= gzread($fp, 999999);
+            }
+            gzclose($fp);
+            $this->refs = unserialize($string);
+
         }
 
     }
 
-    /**
-     * @return float|int
-     */
-    public function node_get_last_id()
-    {
-
-        $block = end($this->dic);
-        $block_last = key($this->dic);
-        $len = strlen($block);
-        $cnt = $len / $this->size_node - 1;
-        return $block_last * $this->size_block + $cnt;
-    }
 
     /**
+     * create first node sequence nodes from 0 to 45
      * @return bool
      */
     public function layer_make_empty()
     {
-        //create empty dic
-        $this->dic = array(0 => '');
         for ($i = 0; $i < $this->char_count; ++$i) {
             $this->node_make();
         }
+        $this->nodes[0] = $this->str_pad_null($this->size_node * $this->char_count);
         return true;
     }
 
     /**
+     * null byte string create method
      * @param int $size
      * @return string
      */
@@ -139,51 +153,120 @@ class Yatrie
         return str_repeat("\0", $size);
     }
 
+    public function ref_get_raw(string &$block, int $ref_id, int $pos)
+    {
+        $offset = $this->refs_offset($ref_id);
+        return $this->unpack_24(substr($block, $offset + $pos * $this->size_ref, $this->size_ref));
+    }
+
+    public function ref_get(int $ref_id, int $pos)
+    {
+        $block = &$this->refs_block($ref_id);
+        return $this->ref_get_raw($block, $ref_id, $pos);
+    }
+
+    public function refs_get(int $ref_id, int $size)
+    {
+        $block = &$this->refs_block($ref_id);
+        return substr($block, $this->refs_offset($ref_id), $size);
+    }
+
+    public function refs_offset(int $ref_id)
+    {
+        return ($ref_id & $this->mod) * $this->size_ref;
+    }
+
+    public function node_offset(int $id)
+    {
+        return ($id & $this->mod) * $this->size_node;
+    }
+
 
     /**
-     * this method return trie dictionary block
+     * this method returns trie dictionary block
      * @param int $id
      * @return mixed
      */
-    public function &trie(int $id)
+    public function block_number_get(int $id)
     {
-        $block = $id >> $this->power;
-        return $this->dic[$block];
+        return $id >> $this->power;
+    }
+
+
+    public function &nodes_block(int $id)
+    {
+        $num = $this->block_number_get($id);
+        if (!isset($this->nodes[$num])) {
+            $this->nodes[$num] = '';
+        }
+        return $this->nodes[$num];
+    }
+
+    public function &refs_block(int $ref_id)
+    {
+        $num = $this->block_number_get($ref_id);
+        if (!isset($this->refs[$num])) {
+            $rel_id = $this->id_relative($ref_id);
+            $this->refs[$num] = $this->str_pad_null($rel_id * $this->size_ref);
+        }
+        return $this->refs[$num];
     }
 
     /**
+     * this method returns id relative to the block
+     * @param int $id
+     * @return int
+     */
+    public function id_relative(int $id)
+    {
+        return $id & $this->mod;
+    }
+
+
+    /**
+     * Make new node method
      * @param string|null $mask
      * @param string|null $refs
      * @return int
      */
-    public function node_make(string $mask = null, string $refs = null)
+    public function node_make()
     {
-        $trie = &$this->trie(++$this->id);
-        $trie .= $mask ?? $this->str_pad_null($this->size_mask);
-        $trie .= $refs ?? $this->str_pad_null($this->size_refs);
-//        if ($this->id % 30000 === 0) {
-//            print "created node id: " . $this->id . "\n";
-//        }
-
-        return $this->id;
+        $block = &$this->nodes[$this->block_number_get(++$this->id_node)];
+        $block .= $this->str_pad_null($this->size_node);
+        return $this->id_node;
     }
 
     /**
-     * @param int $id
-     * @param int $char_index
-     * @param int $ref
-     * @return string
+     * Allocate new refs memory block
+     * @param int $size
+     * @return int
      */
-    public function node_save_ref(int $id, int $char_index, int $ref)
+    public function refs_allocate(int $size = 3)
     {
-        $trie = &$this->trie($id);
-        //node id relative to block
-        $id_rel = $id & $this->mod;
-        $offset = $id_rel * $this->size_node + $this->size_mask + $this->size_ref * $char_index;
-//         print __METHOD__." id:$id  id_rel:$id_rel char_index:$char_index offset:$offset ref:$ref\n";
-        $sub = $this->pack_24($ref);
-        return $trie = substr($trie, 0, $offset) . $sub . substr($trie, $offset + $this->size_ref);
+        $id = $this->id_ref;
+        $this->id_ref += $size / $this->size_ref;
+        return ++$id;
     }
+
+    public function ref_insert(string &$refs, int $ref, int $pos)
+    {
+        if ($refs === '') {
+            return $refs = $this->pack_24($ref);
+        }
+        $offset = $this->size_ref * $pos;
+        $refs = substr($refs, 0, $offset) . $this->pack_24($ref) . substr($refs, $offset);
+        return $refs;
+    }
+
+    public function refs_set(string &$block, string $refs, int $offset = null, int $size = null)
+    {
+        if ($offset === null) {
+            $block .= $refs;
+        } else {
+            $block = substr($block, 0, $offset) . $refs . substr($block, $offset + $size);
+        }
+    }
+
 
     /**
      * @param int $parent_id
@@ -193,46 +276,31 @@ class Yatrie
     public function node_char_get_ref(int $parent_id, string $char)
     {
 //        print "parent:$parent_id char:$char\n";
-        $mask = $this->node_get_children($parent_id);
+        list($mask, $ref_id) = $this->node_get($parent_id);
+
+        //number of bits before the current char position in the codepage
+        $bits = $this->codepage[$char] === 0 ? 0 : $this->codepage[$char] - 1;
+
+        //calculate reference position in the references sequence
+        $pos = $this->bit_count($mask, $bits);
 
         if ($this->bit_get($mask, $this->codepage[$char])) {
-            return $this->node_get_ref($parent_id, $this->codepage_index[$char]);
+            return $this->ref_get($ref_id, $pos);
         } else {
             return false;
         }
     }
 
-    /**
-     * @param int $id
-     * @param int $char_index
-     * @return int
-     */
-    public function node_get_ref(int $id, int $char_index)
-    {
-        $trie = &$this->trie($id);
-        //node id relative to block
-        $id_rel = $id & $this->mod;
-//        print "id:$id id_rel:$id_rel char_index:$char_index\n";
-
-        $offset = $id_rel * $this->size_node + $this->size_mask + $this->size_ref * $char_index;
-//        print __METHOD__ . " id:$id id_rel:$id_rel char_index:$char_index offset:$offset\n";
-
-        $res = $this->unpack_24(substr($trie, $offset, $this->size_ref));
-        return $res;
-    }
 
     /**
+     * this method for saving raw node data
      * @param int $id
      * @param int $mask
      * @return string
      */
-    public function node_save_children(int $id, int $mask)
+    public function node_set_raw(string &$block, int $offset, string $node)
     {
-        $trie = &$this->trie($id);
-        //node id relative to block
-        $id_rel = $id & $this->mod;
-        $offset = $id_rel * $this->size_node;
-        return $trie = substr($trie, 0, $offset) . $this->pack_48($mask) . substr($trie, $offset + $this->size_mask);
+        return $block = substr($block, 0, $offset) . $node . substr($block, $offset + $this->size_node);
     }
 
 
@@ -240,15 +308,22 @@ class Yatrie
      * @param int $id
      * @return int
      */
-    public function node_get_children(int $id)
+    public function node_get(int $id)
     {
-        $trie = &$this->trie($id);
-        //node id relative to block
-        $id_rel = $id & $this->mod;
-        $offset = $id_rel * $this->size_node;
-//        print "len: " .strlen($trie)."\n";
-//        print __METHOD__." id:$id id_rel: $id_rel offset:$offset \n";
-        return $this->unpack_48(substr($trie, $offset, $this->size_mask));
+        $block = $this->nodes_block($id);
+        return $this->node_get_raw($block, $this->node_offset($id));
+    }
+
+    /**
+     * this method for getting raw node data
+     * @param int $id
+     * @return int
+     */
+    public function node_get_raw(string &$block, int $offset)
+    {
+        $mask = substr($block, $offset, $this->size_mask);
+        $ref_id = substr($block, $offset + $this->size_mask, $this->size_ref_id);
+        return [$this->unpack_48($mask), $this->unpack_24($ref_id)];
     }
 
     /**
@@ -359,9 +434,11 @@ class Yatrie
      */
     public function node_clear_char_flag(int $id)
     {
-        $mask = $this->node_get_children($id);
-        $this->bit_clear($mask, $this->codepage['flag']);
-        return $this->node_save_children($id, $mask);
+        $block = &$this->nodes_block($id);
+        $offset = $this->node_offset($id);
+        $node = $this->node_get_raw($block, $offset);
+        $this->bit_clear($node[0], $this->codepage['flag']);
+        return $this->node_set_raw($block, $offset, $this->pack_48($node[0]) . $this->pack_24($node[1]));
     }
 
     /**
@@ -370,8 +447,8 @@ class Yatrie
      */
     public function node_get_char_flag(int $id)
     {
-        $mask = $this->node_get_children($id);
-        return $this->bit_get($mask, $this->codepage['flag']);
+        $node = $this->node_get($id);
+        return $this->bit_get($node[0], $this->codepage['flag']);
     }
 
     /**
@@ -380,10 +457,11 @@ class Yatrie
      */
     public function node_set_char_flag(int $id)
     {
-//        print "add flag id:$id\n";
-        $mask = $this->node_get_children($id);
-        $this->bit_set($mask, $this->codepage['flag']);
-        return $this->node_save_children($id, $mask);
+        $block = &$this->nodes_block($id);
+        $offset = $this->node_offset($id);
+        $node = $this->node_get_raw($block, $offset);
+        $this->bit_set($node[0], $this->codepage['flag']);
+        return $this->node_set_raw($block, $offset, $this->pack_48($node[0]) . $this->pack_24($node[1]));
     }
 
 
@@ -393,58 +471,132 @@ class Yatrie
      */
     public function trie_add(string $word)
     {
-//        print "word: $word\n";
         $abc = $this->str_split_rus_mod($word);
         $cnt = count($abc);
 
+
         //this is the first letter
-        $id = $this->codepage_index[$abc[0]];
-//print "first letter index:$id\n";
+        $parent_id = $this->codepage_index[$abc[0]];
 
         //we save second char to the first letter node etc
         for ($i = 1; $i < $cnt; ++$i) {
-            $id = $this->trie_add_char($id, $abc[$i]);
+            $parent_id = $this->trie_char_add($i, $parent_id, $abc[$i]);
         }
         //add last char flag for the last char
-//print "last char $id\n";
-        $this->node_set_char_flag($id);
-        return $id;
+        $this->node_set_char_flag($parent_id);
+        return $parent_id;
     }
+
+    private function node_fill(string &$block, int $offset, int $mask, int $ref_id, int $pos, string $char)
+    {
+        //first we need to calculate allocated memory for the current node references
+        $cnt = $this->bit_count($mask, 46);
+
+        //if bitmask is empty we will simply create new refs block for the node
+        if ($cnt === 0) {
+            $size = 0;
+            $refs = '';
+        } else {
+            $size = $this->size_ref * $cnt;
+            //if there is some memory allocated save its id for reuse
+            $this->deal[$size][] = $ref_id;
+
+            //now we get allocated refs
+            $refs = $this->refs_get($ref_id, $size);
+        }
+
+        //create new node and save its id
+        $next_node_id = $this->node_make();
+
+        //insert just created node id to the current node references array
+        $this->ref_insert($refs, $next_node_id, $pos);
+
+        //increase references size
+        $size += $this->size_ref;
+
+        //reallocate used or allocate new refs memory
+        $last_ref_id = $this->id_ref;
+        $ref_id = $this->refs_get_memory($size);
+        $refs_block = &$this->refs_block($ref_id);
+
+        //if new memory allocated
+        if ($last_ref_id !== $this->id_ref) {
+            $this->refs_set($refs_block, $refs);
+            //otherwise used memory allocated
+        } else {
+            $this->refs_set($refs_block, $refs, $this->refs_offset($ref_id), $size);
+        }
+
+        //change node bitmask
+        $this->bit_set($mask, $this->codepage[$char]);
+
+        //save node
+        $this->node_set_raw($block, $offset, $this->pack_48($mask) . $this->pack_24($ref_id));
+
+        return $next_node_id;
+    }
+
 
     /**
      * @param int $parent_id
      * @param string $char
      * @return int
      */
-    public function trie_add_char(int $parent_id, string $char)
+    private function trie_char_add(int $level, int $parent_id, string $char)
     {
-//print "parent:$parent_id char:$char\n";
+        //print "level:$level parent:$parent_id char:$char\n";
 
-        $mask = $this->node_get_children($parent_id);
-        $str = decbin($mask);
-//print "char: $char parent_id: $parent_id  mask: $str\n";
+        //get memory block number
+        $block = &$this->nodes_block($parent_id);
 
+        //$node[0] is node bitmask
+        //$node[1] is a node offset in the references block $ref_id
+        $offset = $this->node_offset($parent_id);
+        list($mask, $ref_id) = $this->node_get_raw($block, $offset);
+
+        //number of bits before the current char position in the codepage
+        $bits = $this->codepage[$char] === 0 ? 0 : $this->codepage[$char] - 1;
+
+        //calculate reference position in the references sequence
+        $pos = $this->bit_count($mask, $bits);
+
+        //if char exists in the bitmask we need to get next node id in the references block
         if ($this->bit_get($mask, $this->codepage[$char])) {
-            $ref_id = $this->node_get_ref($parent_id, $this->codepage_index[$char]);
-//            print "ref:$id\n";
+            $next_node_id = $this->ref_get($ref_id, $pos);
         } else {
-            $this->bit_set($mask, $this->codepage[$char]);
-            $this->node_save_children($parent_id, $mask);
-            $str = decbin($mask);
-//print "saved char: $char mask: $str\n";
-            $mask = $this->node_get_children($parent_id);
-            $str = decbin($mask);
-//print "saved char: $char mask: $str\n";
-
-            $this->node_make();
-            $ref_id = $this->id;
-            $this->node_save_ref($parent_id, $this->codepage_index[$char], $ref_id);
-
-//            $ref = $this->node_get_ref($parent_id, $this->char_index($char));
-//            print "after create: $id ref:$ref\n";
+            $next_node_id = $this->node_fill($block, $offset, $mask, $ref_id, $pos, $char);
         }
 
-        return $ref_id;
+        return $next_node_id;
+    }
+
+    public function refs_reallocate(int $size)
+    {
+        if (!empty($this->deal[$size])) {
+            return array_pop($this->deal[$size]);
+        } else {
+            return false;
+        }
+    }
+
+    public function trie_word_nodes(string $word)
+    {
+        $abc = $this->str_split_rus_mod($word);
+        $cnt = count($abc);
+        $res = [];
+
+        $parent_id = $this->codepage_index[$abc[0]];
+        $res[] = [$parent_id, $abc[0]];
+
+        for ($i = 1; $i < $cnt; ++$i) {
+            $parent_id = $this->node_char_get_ref($parent_id, $abc[$i]);
+            if ($parent_id === false) {
+                return false;
+            } else {
+                $res[] = [$parent_id, $abc[$i]];
+            }
+        }
+        return $this->node_get_char_flag($parent_id) === false ? false : $res;
     }
 
 
@@ -454,24 +606,103 @@ class Yatrie
      */
     public function trie_remove(string $word)
     {
-        $abc = $this->str_split_rus_mod($word);
-        $cnt = count($abc);
+        $nodes = $this->trie_word_nodes($word);
+        if ($nodes === false) {
+            return false;
+        }
 
-        $id = $this->codepage_index[$abc[0]];
+        $last = count($nodes) - 1;
+        //first we clear "last char" flag
+        $this->node_clear_char_flag($nodes[$last][0]);
 
-        for ($i = 1; $i < $cnt; ++$i) {
-            //get children
-            $mask = $this->node_get_children($id);
-            //var_dump($this->bit_count($mask));
-            //count children
-            //if children are less than 2 we can delete this node
-            if ($this->bit_count($mask) < 2) {
-                $this->node_save_children($id, 0);
+        //flag to store info if the previous node was deleted
+        $deleted = false;
+
+        //iterate nodes in reverse order
+        for ($i = $last; $i > -1; --$i) {
+            list($parent_id, $char) = $nodes[$i];
+
+            //get node
+            $block = &$this->nodes_block($parent_id);
+            $offset = $this->node_offset($parent_id);
+            list($mask, $ref_id) = $this->node_get_raw($block, $offset);
+
+            //current node refs amount
+            $refs_amount_initial = $refs_amount = $this->bit_count($mask, 46);
+            //check last char flag
+            $flag = $this->bit_get($mask, $this->codepage['flag']) ? true : false;
+
+            if ($deleted) {
+                $this->bit_clear($mask, $this->codepage[$nodes[$i + 1][1]]);
+                //decrement $refs_amount
+                --$refs_amount;
             }
 
-            $id = $this->node_get_ref($id, $this->codepage_index[$abc[$i]]);
+            //if the node doesn't have references and last char flag is not set we can delete it
+            if ($refs_amount === 0 && !$flag) {
+                $this->node_remove($block, $offset, $parent_id, $ref_id, $refs_amount_initial);
+                $deleted = true;
+            } else if ($deleted) { //if the node was changed we need to change its references
+
+                $size = $this->size_ref * $refs_amount_initial;
+                $refs = $this->refs_get($ref_id, $size);
+
+                //number of bits before the char position in the codepage
+                $bits = $this->codepage[$nodes[$i + 1][1]] === 0 ? 0 : $this->codepage[$nodes[$i + 1][1]] - 1;
+                $pos = $this->bit_count($mask, $bits);
+
+                $this->ref_remove($refs, $pos);
+
+                //new refs size
+                $size_new = $this->size_ref * $refs_amount;
+
+                //reallocate used or allocate new refs memory
+                $last_ref_id = $this->id_ref;
+                $ref_id = $this->refs_get_memory($size_new);
+
+                $refs_block = &$this->refs_block($ref_id);
+
+                //if new memory allocated
+                if ($last_ref_id !== $this->id_ref) {
+                    $this->refs_set($refs_block, $refs);
+                    //otherwise used memory allocated
+                } else {
+                    $this->refs_set($refs_block, $refs, $this->refs_offset($ref_id), $size_new);
+                }
+
+                $deleted = false;
+            } else {
+                $deleted = false;
+            }
         }
-        return $this->node_clear_char_flag($id);
+
+        return true;
+    }
+
+    private function refs_get_memory(int $size)
+    {
+        $ref_id = $this->refs_reallocate($size);
+
+        //if reallocation failed
+        if ($ref_id === false) {
+            $ref_id = $this->refs_allocate($size);
+        }
+        return $ref_id;
+    }
+
+    private function ref_remove(string &$refs, int $ref_pos)
+    {
+        $offset = $this->size_ref * $ref_pos;
+        $refs = substr($refs, 0, $offset) . substr($refs, $offset + $this->size_ref);
+        return $refs;
+    }
+
+    private function node_remove(string &$block, int $offset, int $parent_id, int $ref_id, int $refs_amount)
+    {
+        //first deallocate refs memory
+        $this->deal[$refs_amount * $this->size_ref][] = $ref_id;
+        //clear node mask and reference
+        return $this->node_set_raw($block, $offset, $this->str_pad_null($this->size_node));
     }
 
     /**
@@ -483,16 +714,16 @@ class Yatrie
         $abc = $this->str_split_rus_mod($word);
         $cnt = count($abc);
 
-        $id = $this->codepage_index[$abc[0]];
+        $parent_id = $this->codepage_index[$abc[0]];
 
         for ($i = 1; $i < $cnt; ++$i) {
-            $id = $this->node_char_get_ref($id, $abc[$i]);
-            if($id === false){
+            $parent_id = $this->node_char_get_ref($parent_id, $abc[$i]);
+            if ($parent_id === false) {
                 return false;
             }
         }
 
-        return $this->node_get_char_flag($id) === false ? false : $id;
+        return $this->node_get_char_flag($parent_id) === false ? false : $parent_id;
     }
 
 
@@ -537,6 +768,8 @@ class Yatrie
     {
         if ($length > 0) {
             $i &= (2 << $length - 1) - 1; // 2 << $i === pow(2,$i-1) bit shift is about 3% faster than pow()
+        } else if ($length === 0) {
+            return 0;
         }
         $S = [1, 2, 4, 8, 16, 32];
         $B = [0x5555555555555555, 0x3333333333333333, 0x0F0F0F0F0F0F0F0F, 0x00FF00FF00FF00FF, 0x0000FFFF0000FFFF, 0x000000FFFFFF];

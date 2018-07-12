@@ -141,25 +141,17 @@ class TestYatrie extends TestCase
     /**
      * @return array
      */
-    public function data_trie()
+    public function data_node_get()
     {
-        return [[0, 0], [1, 1], [1000, 999], [5000, 2500], [10000, 1234], [20000, 15555],];
+        return [[0], [2], [10], [100000], [200000]];
     }
 
     /**
      * @return array
      */
-    public function data_node_get_children()
+    public function data_block_number_get()
     {
-        return [[0], [1], [2], [21], [24]];
-    }
-
-    /**
-     * @return array
-     */
-    public function data_node_get_last_id()
-    {
-        return [[10], [15], [2500], [15000]];
+        return [[0], [21], [24], [65535], [100000]];
     }
 
 
@@ -231,30 +223,30 @@ class TestYatrie extends TestCase
     {
         //parend node id, word
         return [
-            [0, 'а'],
-            [0, 'б'],
-            [0, 'я'],
-            [0, 'фрик'],
+            ['а'],
+            ['б'],
+            ['я'],
+            ['фрик'],
         ];
     }
 
     /**
      * @return array
      */
-    public function data_trie_add_char()
+    public function data_trie_char_add()
     {
         //parend node id, words to add, returned reference id
         return [
-            [0, ['а'], 1],
-            [0, ['б'], 1],
-            [0, ['я'], 1],
-            [0, ['а', 'аб'], 2],
-            [0, ['яя'], 2],
-            [0, ['ааааа'], 5],
-            [0, ['бвгде'], 5],
-            [0, ['фрика'], 5],
-            [0, ['фрик', 'фрика'], 5],
-            [10, ['фри', 'фрик', 'фрика'], 5],
+            [['а'], 1],
+            [['б'], 1],
+            [['я'], 1],
+            [['а', 'аб'], 2],
+            [['яя'], 2],
+            [['ааааа'], 5],
+            [['бвгде'], 5],
+            [['фрика'], 5],
+            [['фрик', 'фрика'], 5],
+            [['фри', 'фрик', 'фрика'], 5],
         ];
     }
 
@@ -263,45 +255,47 @@ class TestYatrie extends TestCase
      * @param string $char
      * @param string $expected
      * @test
-     * @dataProvider data_trie_add_char
+     * @dataProvider data_trie_char_add
      */
-    public function test_trie_add_char(int $id, array $words, int $expected)
+    public function test_trie_char_add(array $words, int $expected)
     {
         $t = new Reflect(new Yatrie());
-        $shift = $t->id;
+        $shift = $t->id_node; //already created nodes
 
         foreach ($words as $word) {
-            $parent_id = $id;
-            foreach ($t->str_split_rus_mod($word) as $char) {
-                $parent_id = $t->trie_add_char($parent_id, $char);
+            $array = $t->str_split_rus_mod($word);
+            $parent_id = $t->codepage_index[$array[0]];
+            foreach ($array as $i => $char) {
+                $parent_id = $t->trie_char_add($i, $parent_id, $char);
             }
         }
         $this->assertEquals($shift + $expected, $parent_id);
     }
 
     /**
-     * @param string $id
-     * @param string $char
-     * @param string $expected
+     * @param string $word
      * @test
      * @dataProvider data_node_char_get_ref
      */
-    public function test_node_char_get_ref(int $id, string $word)
+    public function test_node_char_get_ref(string $word)
     {
         $t = new Reflect(new Yatrie());
-        $shift = $t->id;
+        $shift = $t->id_node;
 
-        $parent_id = $id;
-        foreach ($t->str_split_rus($word) as $char) {
+        $array = $t->str_split_rus($word);
+        $parent_id = $t->codepage_index[$array[0]];
+
+        foreach ($array as $i => $char) {
             //dic is empty so false expected
             $this->assertFalse($t->node_char_get_ref($parent_id, $char));
-            $ref_id = $t->trie_add_char($parent_id, $char);
 
-            $this->assertEquals($t->node_char_get_ref($parent_id, $char), $ref_id);
+            $ref_id = $t->trie_char_add($i, $parent_id, $char);
+
+            $res = $t->node_char_get_ref($parent_id, $char);
+            //now check if saved ref_id equals returned
+            $this->assertEquals($ref_id, $res);
             $parent_id = $ref_id;
         }
-
-
     }
 
     /**
@@ -432,7 +426,14 @@ class TestYatrie extends TestCase
      */
     public function init_trie_dataProvider()
     {
-        return [[null], [dirname(__FILE__) . '/test_dic.txt']];
+        return [
+            [null],
+            [[
+                dirname(__FILE__) . '/test_headers.txt',
+                dirname(__FILE__) . '/test_nodes.txt.gz',
+                dirname(__FILE__) . '/test_refs.txt.gz'
+            ]]
+        ];
     }
 
     /**
@@ -442,32 +443,12 @@ class TestYatrie extends TestCase
     {
         $t = new Yatrie();
         //check class calculated variables
-        $this->assertEquals(count($t->codepage_index), $t->char_count);
-        $this->assertEquals(count($t->codepage_index) * $t->size_ref, $t->size_refs);
-        $this->assertEquals(count($t->codepage_index) * $t->size_ref + $t->size_mask, $t->size_node);
+        $cnt_check = count($t->codepage_index);
+        $this->assertEquals($cnt_check, $t->char_count);
+        $this->assertEquals($t->size_ref_id + $t->size_mask, $t->size_node);
 
     }
 
-
-    /**
-     * @test
-     * @dataProvider data_node_get_last_id
-     */
-    public function test_node_get_last_id(int $nodes)
-    {
-        $t = $this->class_mock_create();
-
-        //class variables
-        $t->char_count = $chars = count($t->codepage_index);
-        $t->size_refs = $chars * $t->size_ref;
-        $t->size_node = $t->size_mask + $t->size_refs;
-
-        for ($i = 0; $i < $nodes; ++$i) {
-            $t->node_make();
-        }
-        $this->assertEquals($nodes - 1, $t->node_get_last_id());
-
-    }
 
     /**
      *
@@ -478,28 +459,61 @@ class TestYatrie extends TestCase
 
         //class variables
         $t->char_count = $chars = count($t->codepage_index);
-        $t->size_refs = $chars * $t->size_ref;
+        $t->size_node = $t->size_ref_id + $t->size_mask;
 
         //calculate expected dic len
-        $dic_len = ($chars * $t->size_ref + $t->size_mask) * $chars;
+        $nodes_block_len = $chars * $t->size_node;
 
 
         $t->layer_make_empty();
-        $this->assertEquals($dic_len, strlen($t->dic[0]));
+        $this->assertEquals($nodes_block_len, strlen($t->nodes[0]));
     }
 
     /**
      * @test
      * @dataProvider init_trie_dataProvider
      */
-    public function test_init_trie(string $dic = null)
+    public function test_init_trie(array $dic = null)
     {
         $t = new Yatrie($dic);
         //check class calculated variables
         $this->assertEquals(count($t->codepage_index), $t->char_count);
-        $this->assertEquals(count($t->codepage_index) * $t->size_ref, $t->size_refs);
-        $this->assertEquals(count($t->codepage_index) * $t->size_ref + $t->size_mask, $t->size_node);
+        $this->assertEquals($t->size_mask + $t->size_ref_id, $t->size_node);
 
+        if (!empty($dic)) {
+            //headers
+            list($id_node, $id_ref) = unserialize(file_get_contents($dic[0]));
+            $this->assertEquals($id_node, $t->id_node);
+            $this->assertEquals($id_ref, $t->id_ref);
+            //nodes
+            $string = '';
+            $fp = gzopen($dic[1], 'r');
+            while (!feof($fp)) {
+                $string .= gzread($fp, 999999);
+            }
+            gzclose($fp);
+            $nodes = unserialize($string);
+            $this->assertEquals($nodes, $t->nodes);
+            unset($string, $nodes);
+
+            //refs
+            $string = '';
+            $fp = gzopen($dic[2], 'r');
+            while (!feof($fp)) {
+                $string .= gzread($fp, 999999);
+            }
+            gzclose($fp);
+            $refs = unserialize($string);
+            $this->assertEquals($refs, $t->refs);
+            unset($string, $refs);
+
+        } else {
+            //empty dic init check only one alphabet nodes expected
+            $this->assertEquals($t->size_node * count($t->codepage_index), strlen($t->nodes[0]));
+
+            //expected last node id equals number of alphabet chars (+1 cause first node_id is 0)
+            $this->assertEquals(count($t->codepage_index), $t->id_node + 1);
+        }
     }
 
     /**
@@ -511,23 +525,21 @@ class TestYatrie extends TestCase
         $t = $this->class_mock_create();
 
         //class variables
-        $t->char_count = $chars = count($t->codepage_index);
-        $t->size_refs = $chars * $t->size_ref;
+        $t->size_node = $t->size_ref + $t->size_mask;
 
-        $size_node = $t->size_mask + $t->size_refs;
 
         //create sample dic
         $t->dic = [0 => ''];
 
         //create first node
-        $id = $t->node_make($mask, $refs);
+        $id = $t->node_make();
         $this->assertEquals(0, $id); // node id increment check
-        $this->assertEquals($size_node, strlen($t->dic[0]));
+        $this->assertEquals($t->size_node, strlen($t->nodes[0]));
 
         //create second node
-        $id = $t->node_make($mask, $refs);
+        $id = $t->node_make();
         $this->assertEquals($id, 1); // node id increment check
-        $this->assertEquals($size_node * 2, strlen($t->dic[0]));
+        $this->assertEquals($t->size_node * 2, strlen($t->nodes[0]));
 
     }
 
@@ -536,121 +548,68 @@ class TestYatrie extends TestCase
      * @param $expected
      *
      * @test
-     * @dataProvider data_trie
+     * @dataProvider data_block_number_get
      */
-    public function test_trie(int $nodes, int $id)
+    public function test_block_number_get(int $id)
     {
         $t = new Yatrie();
-
-
-        for ($i = 0; $i < $nodes; ++$i) {
-            $t->node_make();
-        }
-
-        //block index expected
-        $block_index = (int)floor($id / $t->size_block);
-
-        //write test value to the block
-        $t->dic[$block_index] = "hit $block_index";
-
-        //returned block
-        $block = $t->trie($id);
-
-        //check returned block nulber
-        $this->assertEquals($t->dic[$block_index], $block);
-
+        $block_num = $t->block_number_get($id);
+        $this->assertEquals((int)floor($id / $t->size_block), $block_num);
     }
 
     /**
      * @test
-     * @dataProvider data_node_get_children
+     * @dataProvider data_node_get
      * @param int $id
      */
-    public function test_node_get_children(int $id)
+    public function test_node_get_raw(int $id)
+    {
+        $t = new Yatrie();
+        //test data
+        $mask = bindec('1010101010');
+        $mask_str = $t->pack_48($mask);
+        $ref_id = 123456;
+        $ref_id_str = $t->pack_24($ref_id);
+
+        //id relative to the block
+        $rel_id = $id % $t->size_block;
+        $offset = $rel_id * $t->size_node;
+
+        $block = &$t->nodes_block($id);
+        $block = str_repeat("\0", $t->size_block * $t->size_node);
+        $block = substr($block, 0, $offset) . $mask_str . $ref_id_str . substr($block, $offset + $t->size_node);
+
+        $res = $t->node_get_raw($block, $offset);
+        $this->assertEquals($mask, $res[0]);
+        $this->assertEquals($ref_id, $res[1]);
+    }
+
+    /**
+     * @test
+     * @dataProvider data_node_get
+     * @param int $id
+     */
+    public function test_node_set_raw(int $id)
     {
         $t = new Yatrie();
         $mask_check = bindec('111111111111111111111111111111111111111111111110');
-        $mask_packed = $t->pack_48($mask_check);
-        $dic = &$t->trie($id);
-        $id_rel = $id % $t->size_block;
-        $offset = $id_rel * $t->size_node;
-        $dic = substr($dic, 0, $offset) . $mask_packed . substr($dic, $offset + 6);
-        $mask = $t->node_get_children($id);
+        $mask_str = $t->pack_48($mask_check);
+
+        $ref_id_check = 444;
+        $ref_id_str = $t->pack_24($ref_id_check);
+
+        $node = $mask_str . $ref_id_str;
+
+        $block = &$t->nodes_block($id);
+        $block = str_repeat("\0", $t->size_block * $t->size_node);
+        $offset = $t->node_offset($id);
+        $t->node_set_raw($block, $offset, $node);
+        list($mask, $ref_id) = $t->node_get_raw($block, $offset);
         $this->assertEquals($mask_check, $mask);
+        $this->assertEquals($ref_id_check, $ref_id);
     }
 
-    /**
-     * @test
-     * @dataProvider data_node_get_children
-     * @param int $id
-     */
-    public function test_node_save_children(int $id)
-    {
-        $t = new Yatrie();
-        $mask_check = bindec('111111111111111111111111111111111111111111111110');
-        $t->node_save_children($id, $mask_check);
-        $mask = $t->node_get_children($id);
-        $this->assertEquals($mask_check, $mask);
-    }
 
-    /**
-     * @test
-     * @dataProvider data_node_get_children
-     * @param int $id
-     */
-    public function test_node_get_ref(int $id)
-    {
-        $t = new Yatrie();
-        $id_rel = $id % $t->size_block;
-
-        $dic = &$t->trie($id);
-        $i1 = 523456;
-        $i2 = 223555;
-
-        $mask_packed1 = $t->pack_24($i1);
-        $mask_packed2 = $t->pack_24($i2);
-
-        $index1 = $t->codepage_index['а'];
-        $index2 = $t->codepage_index['г'];
-
-        $offset1 = $id_rel * $t->size_node + $t->size_mask + $t->size_ref * $index1;
-        $offset2 = $id_rel * $t->size_node + $t->size_mask + $t->size_ref * $index2;
-
-        $dic = substr($dic, 0, $offset1) . $mask_packed1 . substr($dic, $offset1 + $t->size_ref);
-        $dic = substr($dic, 0, $offset2) . $mask_packed2 . substr($dic, $offset2 + $t->size_ref);
-
-        $mask1 = $t->node_get_ref($id, $index1);
-        $mask2 = $t->node_get_ref($id, $index2);
-
-        $this->assertEquals($i1, $mask1);
-        $this->assertEquals($i2, $mask2);
-    }
-
-    /**
-     * @test
-     * @dataProvider data_node_get_children
-     * @param int $id
-     */
-    public function test_node_save_ref(int $id)
-    {
-        $t = new Yatrie();
-        $i1 = 123555;
-        $i2 = 532343;
-        $index1 = $t->codepage_index['а'];
-        $index2 = $t->codepage_index['я'];
-        $t->node_save_ref($id, $index1, $i1);
-        $t->node_save_ref($id, $index2, $i2);
-
-        $ref1 = $t->node_get_ref($id, $index1, $i1);
-        $ref2 = $t->node_get_ref($id, $index2, $i2);
-
-        $this->assertEquals($i1, $ref1);
-        $this->assertEquals($i2, $ref2);
-    }
-
-    /**
-     *
-     */
     public function test_pack_16()
     {
         $t = new Yatrie();
@@ -729,8 +688,9 @@ class TestYatrie extends TestCase
         $t = new Reflect(new Yatrie());
         $t->node_set_char_flag($id);
 
+        list($mask, $ref_id) = $t->node_get($id);
         //check flag bit
-        $this->assertEquals($t->bit_set(0, $t->codepage['flag']), $t->node_get_children($id));
+        $this->assertEquals($t->bit_set(0, $t->codepage['flag']), $mask);
     }
 
     /**
@@ -778,25 +738,30 @@ class TestYatrie extends TestCase
      * @test
      * @dataProvider data_trie_add
      */
-    public function test_trie_add(string $word)
+    public function test_trie_add(array $words)
     {
         $t = new Reflect(new Yatrie());
-        $last_id = $t->trie_add($word);
 
-        $chars = $t->str_split_rus_mod($word);
-        //first char node id
-        $id = $t->codepage_index[$chars[0]];
-        $len = count($chars);
+        foreach ($words as $i => $word) {
+            $last_id = $t->trie_add($word);
 
-        for ($i = 1; $i < $len; ++$i) {
-            $id = $t->node_char_get_ref($id, $chars[$i]);
-            $this->assertNotFalse($id);
+            $chars = $t->str_split_rus_mod($word);
+            //first char node id
+            $id = $t->codepage_index[$chars[0]];
+            $len = count($chars);
+
+            if ($i === 0) {
+                for ($i = 1; $i < $len; ++$i) {
+                    $id = $t->node_char_get_ref($id, $chars[$i]);
+                    $this->assertNotFalse($id);
+                }
+                //check $last_id and last $id in chain
+                $this->assertEquals($last_id, $id);
+            }
+
+            //check last char flag
+            $this->assertTrue($t->node_get_char_flag($last_id));
         }
-
-        //check $last_id and last $id in chain
-        $this->assertEquals($last_id, $id);
-        //check last char flag
-        $this->assertTrue($t->node_get_char_flag($id));
 
     }
 
@@ -805,7 +770,13 @@ class TestYatrie extends TestCase
      */
     public function data_trie_add()
     {
-        return [["а"], ["я"], ["один"], ["тысячатристашестьдесятвосемь"]];
+        return [
+            [["ааааа", "аааа", "ааа", "аа", "а"]],
+            [["а", "б"]],
+            [["я"]],
+            [["я", "он", "она", "оными", "один", "одна", "хозяин", "хозяйка"]],
+            [["тысячатристашестьдесятвосемь"]]
+        ];
     }
 
     /**
@@ -813,38 +784,49 @@ class TestYatrie extends TestCase
      * @test
      * @dataProvider data_trie_add
      */
-    public function test_trie_remove(string $word)
+    public function test_trie_remove(array $words)
     {
-        $nodes = []; //used nodes array
         $t = new Reflect(new Yatrie());
-        $last_id = $t->trie_add($word);
 
-        $chars = $t->str_split_rus_mod($word);
-        //first char node id
+        foreach ($words as $i => $word) {
+            $last_id[$i] = $t->trie_add($word);
+        }
+        foreach ($words as $i => $word) {
 
-        $id = $t->codepage_index[$chars[0]];
-        $nodes[$id] = $chars[0];
-        $len = count($chars);
-
-        for ($i = 1; $i < $len; ++$i) {
-            $id = $t->node_char_get_ref($id, $chars[$i]);
-            $nodes[$id] = $chars[$i];
-            $this->assertNotFalse($id);
+            $this->assertTrue($t->trie_remove($word));
+            //check if char flag cleared
+            $this->assertFalse($t->node_get_char_flag($last_id[$i]));
         }
 
-        $t->trie_remove($word);
+        //check trie remove on words with the same nodes used
+        $short_id = $t->trie_add($words[0]);
+        $long_id = $t->trie_add($words[0] . $words[0]);
 
-        //check if char flag cleared
-        $this->assertFalse($t->node_get_char_flag($last_id));
+        //delete shorter word and check if longer word is still exists
+        $t->trie_remove($words[0] . $words[0]);
 
-        //nodes check
-        foreach ($nodes as $id => $char) {
-            $mask = $t->node_get_children($id);
-            $check = $t->bit_get($mask, $t->codepage[$char]);
-            $this->assertFalse($check);
-        }
+        $this->assertFalse($t->trie_check($words[0] . $words[0]));
+        $this->assertEquals($short_id, $t->trie_check($words[0]));
+
+        //check return if word is not exists
+        $this->assertFalse($t->trie_remove($word . $word . $word));
     }
 
+    /**
+     * @test
+     */
+    public function test_refs_allocate()
+    {
+        $t = new Yatrie();
+
+        for ($i = 3; $i < 200; $i += 3) {
+
+            $id = $t->id_ref;
+            $ref_id = $t->refs_allocate($i);
+            $this->assertEquals($id + 1, $ref_id);
+        }
+
+    }
 
     /**
      * @param string $word
@@ -852,7 +834,8 @@ class TestYatrie extends TestCase
      * @test
      * @dataProvider data_trie_check
      */
-    public function test_trie_check(string $word, string $check){
+    public function test_trie_check(string $word, string $check)
+    {
         $t = new Yatrie();
         $last_id = $t->trie_add($word);
 
@@ -863,12 +846,250 @@ class TestYatrie extends TestCase
         $this->assertFalse($t->trie_check($check));
     }
 
-    public function data_trie_check(){
+    /**
+     * @return array
+     */
+    public function data_trie_check()
+    {
         return [
-            ['а','б'],
-            ['аа','аб'],
-            ['человек','человека']
+            ['а', 'б'],
+            ['аа', 'аб'],
+            ['человек', 'человека']
         ];
+    }
+
+
+    /**
+     * @param int $ref
+     * @param int $pos
+     * @test
+     * @dataProvider data_ref_insert
+     */
+    public function test_ref_get_raw(int $ref_id, int $pos, int $ref)
+    {
+        $t = new Yatrie();
+        $refs = str_repeat("\0", $t->size_ref * $t->size_block + $t->size_ref * $t->char_count);
+        $ref_id = $ref_id % $t->size_block;
+        $offset = $ref_id * $t->size_ref + $pos * $t->size_ref;
+        $refs = substr($refs, 0, $offset) . $t->pack_24($ref) . substr($refs, $offset + $t->size_ref);
+        $res = $t->ref_get_raw($refs, $ref_id, $pos);
+        $this->assertEquals($ref, $res);
+    }
+
+
+    /**
+     * @test
+     */
+    public function test_ref_insert()
+    {
+        $class = new Yatrie();
+        $t = new Reflect($class);
+        $check = $refs = $t->str_pad_null($t->size_ref * $t->size_block);
+        $size_check = $size_init = strlen($refs);
+
+        for ($i = 1; $i < $t->size_block; $i <<= 1) {
+            $size_check += $t->size_ref;
+            $t->call('ref_insert', [&$refs, $i, $i]);
+
+            $check = $t->unpack_24(substr($refs, $i * $t->size_ref, $t->size_ref));
+            $this->assertEquals($check, $i);
+            $this->assertEquals($size_check, strlen($refs));
+
+
+        }
+    }
+
+
+    /**
+     * @param int $ref_id
+     * @param int $pos
+     * @param int $ref
+     * @test
+     * @dataProvider data_ref_insert
+     */
+    public function test_refs_get(int $ref_id, int $pos, int $ref)
+    {
+        $t = new Yatrie();
+        $size = $t->size_ref * count($t->codepage); //max refs size
+        $block_num = (int)floor($ref_id / $t->size_block);
+        $block = str_repeat("\0", $t->size_block * $t->size_ref); //empty block
+        $refs = str_repeat("\0", $size); //empty refs
+        $t->ref_insert($refs, $ref, $pos);
+        $size += $t->size_ref; //increase size
+        //manual save refs to the block
+        $rel_id = $ref_id % $t->size_block;
+        $offset = $rel_id * $t->size_ref;
+        $block = substr($block, 0, $offset) . $refs . substr($block, $offset);
+        $t->refs[$block_num] = $block;
+        //refs_get and check
+        $res = $t->refs_get($ref_id, $size);
+        $this->assertEquals($refs, $res);
+
+    }
+
+    /**
+     * @param int $ref_id
+     * @param int $pos
+     * @param int $ref
+     * @test
+     * @dataProvider data_ref_insert
+     */
+    public function test_refs_set(int $ref_id, int $pos, int $ref)
+    {
+        $t = new Yatrie();
+        $size = $t->size_ref * count($t->codepage); //max refs size
+        $check = $block = str_repeat("\0", $t->size_block * $t->size_ref); //empty block
+        $refs = str_repeat("\0", $size); //empty refs
+        $t->ref_insert($refs, $ref, $pos);
+        //manual save refs to the block
+        $rel_id = $ref_id % $t->size_block;
+        $offset = $rel_id * $t->size_ref;
+        $check = substr($block, 0, $offset) . $refs . substr($block, $offset + $size);
+        //refs_get and check
+        $t->refs_set($block, $refs, $offset, $size);
+        $this->assertEquals($check, $block);
+    }
+
+
+    /**
+     * @param int $ref_id
+     * @param int $pos
+     * @param int $ref
+     * @test
+     * @dataProvider data_ref_insert
+     */
+    public function test_refs_offset(int $ref_id, int $pos, int $ref)
+    {
+        $t = new Yatrie();
+        $expected = $ref_id % $t->size_block * $t->size_ref;
+        $res = $t->refs_offset($ref_id);
+        $this->assertEquals($expected, $res);
+
+    }
+
+    /**
+     * @return array
+     */
+    public function data_ref_insert()
+    {
+        //int $ref_id, int $pos, int $ref
+        return [
+            [0, 0, 0], [0, 32, 123], [10, 10, 555], [500, 22, 32123], [601, 1, 225222]
+        ];
+    }
+
+
+    /**
+     *
+     * @test
+     */
+    public function test_refs_block()
+    {
+        $t = new Yatrie();
+        $ref_one = 1234567;
+        $ref_two = 2345678;
+        $refs = $t->pack_24($ref_one) . $t->pack_24($ref_two);
+        for ($ref_id = 1; $ref_id < 400000; $ref_id <<= 1) {
+            $block = &$t->refs_block($ref_id);
+            $block .= $refs;
+
+            //check refs block saving
+            $check_num = (int)floor($ref_id / $t->size_block);
+            $this->assertEquals($t->refs[$check_num], $block);
+
+            //check if refs_block correctly create new blocks
+            $id_rel = $ref_id % $t->size_block;
+            $offset = $id_rel * $t->size_ref;
+            $sub_one = substr($block, $offset, $t->size_ref);
+            $sub_two = substr($block, $offset + $t->size_ref, $t->size_ref);
+            $this->assertEquals($ref_one, $t->unpack_24($sub_one));
+            $this->assertEquals($ref_two, $t->unpack_24($sub_two));
+
+            //clear refs
+            $t->refs = [];
+        }
+
+    }
+
+    /**
+     *
+     * @test
+     */
+    public function test_nodes_block()
+    {
+        $t = new Yatrie();
+        for ($i = 1; $i < 400000; $i <<= 1) {
+            $block = &$t->nodes_block($i);
+            $check_num = (int)floor($i / $t->size_block);
+            $this->assertEquals($t->nodes[$check_num], $block);
+        }
+
+    }
+
+    public function test_id_relative()
+    {
+        $t = new Yatrie();
+        for ($i = 1; $i < 400000; $i <<= 1) {
+            $id = $t->id_relative($i);
+            $check = $i % $t->size_block;
+            $this->assertEquals($check, $id);
+        }
+    }
+
+    public function test_refs_reallocate()
+    {
+        $t = $this->class_mock_create();
+        //$t = new Reflect($class);
+        //test missing size
+        $this->assertFalse($t->refs_reallocate(55555));
+
+        //main test
+        for ($i = 1; $i < 20000; $i <<= 1) {
+            $t->deal[$i] = [$i]; //testing deallocated block
+            $t->deal[$i + $i] = [$i + $i]; //another deallocated block
+            //test if correct block returned
+            $this->assertEquals($i, $t->refs_reallocate($i));
+            //test if second request failed
+            $this->assertFalse($t->refs_reallocate($i));
+        }
+
+    }
+
+
+    /**
+     * @test
+     * @dataProvider data_node_char_get_ref
+     */
+    public function test_trie_word_nodes(string $word)
+    {
+        $t = new Yatrie();
+        $last_node_id = $t->trie_add($word);
+        $array = $t->str_split_rus_mod($word);
+        $expected = count($array);
+        $nodes = $t->trie_word_nodes($word);
+
+        //check calculated nodes amount and returned amount
+        $this->assertEquals($expected, count($nodes));
+
+        //check last node id and returned last node id
+        $this->assertEquals($last_node_id, end($nodes)[0]);
+
+    }
+
+    /**
+     * @test
+     */
+    public function test_ref_remove()
+    {
+        $t = new Reflect(new Yatrie());
+        $empty = $refs = $t->str_pad_null($t->size_ref * $t->size_block * 10); //very big $refs string
+        for ($i = 1; $i < 200; $i <<= 1) {
+            $t->call('ref_insert', [&$refs, $i, $i]); //now we insert ref $i on $i position
+            $check = $refs; //save changed $refs string
+            $t->call('ref_remove', [&$refs, $i]); //remove ref from $i position
+            $this->assertNotEquals($check, $refs); //expected not equals $refs and previously saved refs
+            $this->assertEquals($empty, $refs); //expected equals initial refs and $refs
+        }
     }
 
     /**

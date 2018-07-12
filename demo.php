@@ -2,9 +2,12 @@
 require_once(dirname(__FILE__) . '/src/Yatrie.php');
 require_once(dirname(__FILE__) . '/etc/bmark.php');
 
-$dic = dirname(__FILE__) . '/dic_tiny.txt';
+$dic = [
+    dirname(__FILE__) . '/tiny_headers.txt',
+    dirname(__FILE__) . '/tiny_nodes.txt.gz',
+    dirname(__FILE__) . '/tiny_refs.txt.gz'
+];
 $trie = new Yatrie($dic);
-
 
 if (empty($argv[1])) {
     exit("Please enter a word to search!");
@@ -22,6 +25,7 @@ switch ($argv[1]) {
 
 
     default:
-        $res = $trie->trie_check($argv[1]) ? " found word: " . $argv[1] : "not found: " . $argv[1];
+        $res = $trie->trie_check($argv[1]);
+        $res = $res !== false ? " found word: " . $argv[1] . " node_id: $res " : "not found: " . $argv[1];
         echo "$res\n";
 }

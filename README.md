@@ -4,7 +4,7 @@
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/legale/yatrie.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Flegale%2Fyatrie)
 
 
-# Yatrie v0.0.6b3
+# Yatrie v0.1.0
 Yet another PHP Trie Library 
 
 ## SETUP
@@ -27,7 +27,7 @@ Current version speed is 1 millon words in 13.067 second (76528 wps).
 
 
 
-### Binary data storage structure:
+### Binary data storage structure before version 0.1.0:
 ```
 node 154 bytes
   6 bytes to store bitmap (in the current codepage 47 bits are used)
@@ -35,6 +35,30 @@ node 154 bytes
 node 154 bytes
   6 bytes to store bitmap (in the current codepage 47 bits are used)
   3 bytes * 46 chars = 148 bytes for references
+etc
+```
+### Binary data storage structure since version 0.1.0:
+#### Nodes memory block:
+```
+node 0 (10 bytes)
+  6 bytes to store bitmap (in the current codepage 47 bits are used)
+  3 bytes reference id
+node 1 (10 bytes)
+  6 bytes to store bitmap (in the current codepage 47 bits are used)
+  3 bytes reference id
+etc
+```
+#### References memory block:
+```
+node 0 references (variable size)
+  3 bytes reference to the next node
+  3 bytes reference to the next node
+  3 bytes reference to the next node
+node 1 references (variable size)
+  3 bytes reference to the next node
+node 2 references (variable size)
+  3 bytes reference to the next node
+  3 bytes reference to the next node
 etc
 ```
 

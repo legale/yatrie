@@ -1,3 +1,7 @@
+### v0.1.0
+- Major changes. Node and node references now stores separately. Node are still fixed length 10 bytes (154 bytes before). 
+Variable size references block depending on the number of the references (3 bytes each reference).
+
 ### v0.0.6b3
 - bit_count() optimized. Wegner bit count method replaced with Parallel method
 
@@ -8,7 +12,7 @@
 - trie_check() method bug fix.
 
 ### v0.0.6
-- One of the most expensive operations refactoring: 
+- The most expensive operations refactoring: 
 (int)floor($i / $size_block) replaced with $i >> 12 (12 is an exponent of 2. pow(2,12) ==== 4096)
 $i % $size_block replaced with $i & 4095 (4095 is a value of size_block minus 1. $i % 4096 === $i & 4095)
 

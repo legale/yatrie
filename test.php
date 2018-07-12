@@ -2,26 +2,50 @@
 require_once(dirname(__FILE__) . '/src/Yatrie.php');
 require_once(dirname(__FILE__) . '/etc/bmark.php');
 
-$trie = new Yatrie('dic_tiny.txt');
+$t = new Yatrie();
+$ww[] = 'аа';
+$ww[] = 'аб';
+$ww[] = 'ав';
+$ww[] = 'аг';
+$ww[] = 'ад';
+$ww[] = 'ае';
+$ww[] = 'аё';
+$ww[] = 'аж';
+$ww[] = 'аз';
+$ww[] = 'аи';
+$ww[] = 'ак';
+$ww[] = 'ал';
+$ww[] = 'ам';
+$ww[] = 'ан';
+$ww[] = 'ао';
+$ww[] = 'ап';
+$ww[] = 'ар';
+$ww[] = 'ас';
+$ww[] = 'ат';
+$ww[] = 'аф';
+$ww[] = 'ааа';
+$ww[] = 'ааб';
+$ww[] = 'аав';
+$ww[] = 'ааг';
+$ww[] = 'аад';
+$ww[] = 'аае';
+$ww[] = 'ааё';
+$ww[] = 'ааж';
+$ww[] = 'ааз';
+$ww[] = 'ааи';
 
-$word = 'человек';
-$word2 = 'человекф';
-
-$last_id = $trie->trie_add($word);
-var_dump( $last_id);
-
-print "check $word ";
-var_dump( $trie->trie_check($word));
-
-print "check $word2 ";
-var_dump( $trie->trie_check($word2));
-$bin = strrev(decbin( $trie->node_get_children($last_id)));
-print "$bin\n";
-$len = strlen($bin);
-
-for($i = 0; $i < $len; ++$i){
-    if($bin[$i] === '1'){
-        $index = $i+1;
-        print "$index\n";
+foreach ($ww as $w) {
+//    list($mask,$ref_id) = $t->node_get(0);
+//    $m = decbin($mask);
+//    print "$m $ref_id\n";
+    $t->trie_add($w);
+}
+foreach ($ww as $w) {
+    $res = $t->trie_check($w);
+    if(false === $res){
+        print "$w failed\n";
     }
 }
+
+//var_dump($t->nodes);
+//var_dump($t->refs);
