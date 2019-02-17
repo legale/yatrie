@@ -1095,7 +1095,7 @@ class TestYatrie extends TestCase
     /**
      *
      */
-    protected function setUp(): void
+    protected function setUp()
     {
 
     }
@@ -1103,7 +1103,7 @@ class TestYatrie extends TestCase
     /**
      *
      */
-    protected function tearDown(): void
+    protected function tearDown()
     {
     }
 
