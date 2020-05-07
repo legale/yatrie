@@ -1,0 +1,8 @@
+# force add
+!.gitignore
+
+# ignore tests/vendor
+.idea
+./tests/vendor
+./tests/coverage
+vendor
