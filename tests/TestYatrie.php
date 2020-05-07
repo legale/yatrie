@@ -78,10 +78,10 @@ class TestYatrie extends TestCase
             [substr(pack('P', 123456), 0, 3), 123456],
             [substr(pack('P', 0), 0, 3), 0], //min 24 bit unsigned integer
             [substr(pack('P', $max), 0, 3), $max],//max 24 bit unsigned integer
-            [substr(pack('P', $half), 0, 3), $half],
-            [substr(pack('P', $third), 0, 3), $third],
-            [substr(pack('P', $fourth), 0, 3), $fourth],
-            [substr(pack('P', $fifth), 0, 3), $fifth],
+            [substr(pack('P', $half), 0, 3), (int)$half],
+            [substr(pack('P', $third), 0, 3), (int)$third],
+            [substr(pack('P', $fourth), 0, 3), (int)$fourth],
+            [substr(pack('P', $fifth), 0, 3), (int)$fifth],
         ];
     }
 
@@ -99,10 +99,10 @@ class TestYatrie extends TestCase
             [substr(pack('P', 123456), 0, 6), 123456],
             [substr(pack('P', 0), 0, 6), 0], //min 48 bit unsigned integer
             [substr(pack('P', $max), 0, 6), $max], //max 48 bit unsigned integer
-            [substr(pack('P', $half), 0, 6), $half],
-            [substr(pack('P', $third), 0, 6), $third],
-            [substr(pack('P', $fourth), 0, 6), $fourth],
-            [substr(pack('P', $fifth), 0, 6), $fifth],
+            [substr(pack('P', $half), 0, 6), (int)$half],
+            [substr(pack('P', $third), 0, 6), (int)$third],
+            [substr(pack('P', $fourth), 0, 6), (int)$fourth],
+            [substr(pack('P', $fifth), 0, 6), (int)$fifth],
         ];
     }
 
@@ -128,12 +128,12 @@ class TestYatrie extends TestCase
     {
         //children mask (string 6 bytes), refs(string 46 * 3 = 138 bytes), created node id (int)
         return [
-            [null, null, 0],
-            [null, null, 1],
-            [null, str_repeat("\0", 138), 2],
-            [str_repeat("\0", 6), null, 3],
-            [str_repeat("\0", 6), str_repeat("\0", 138), 4],
-            [str_repeat("\0", 6), str_repeat("\0", 138), 5],
+            [null, null, (string)0],
+            [null, null, (string)1],
+            [null, str_repeat("\0", 138), (string)2],
+            [str_repeat("\0", 6), null, (string)3],
+            [str_repeat("\0", 6), str_repeat("\0", 138), (string)4],
+            [str_repeat("\0", 6), str_repeat("\0", 138), (string)5],
         ];
     }
 
@@ -193,7 +193,7 @@ class TestYatrie extends TestCase
     /**
      * @dataProvider data_bit_get
      */
-    public function test_bit_get(string $mask, int $bit, string $expected)
+    public function test_bit_get(string $mask, int $bit, bool $expected)
     {
         $c = new Yatrie();
         $this->class = new Reflect($c);

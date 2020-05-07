@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1588848308">
-  <project timestamp="1588848308">
+<coverage generated="1588850107">
+  <project timestamp="1588850107">
     <file name="D:\Users\ru\PhpstormProjects\yatrie\src\Yatrie.php">
       <class name="Yatrie" namespace="global">
         <metrics complexity="93" methods="51" coveredmethods="51" conditionals="0" coveredconditionals="0" statements="257" coveredstatements="257" elements="308" coveredelements="308"/>

@@ -3,6 +3,6 @@
 
 # ignore tests/vendor
 .idea
-./tests/vendor
-./tests/coverage
-vendor
+tests/vendor/**
+tests/coverage/**
+vendor/**
